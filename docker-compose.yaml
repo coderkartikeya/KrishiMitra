@@ -1,0 +1,30 @@
+
+
+services:
+  frontend:
+    build:
+      context: ./Client/krishimitra
+    container_name: krishimitra_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - API_BASE_URL=http://server:4000
+    depends_on:
+      - server
+
+  server:
+    build:
+      context: ./Server
+    container_name: krishimitra_server
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+

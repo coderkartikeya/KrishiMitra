@@ -68,7 +68,7 @@ export const useUserPreferences = () => {
 
   const removeSecondaryLanguage = useCallback((language) => {
     // This would need to be implemented in the store
-    console.log('Remove secondary language:', language);
+    // console.log('Remove secondary language:', language);
   }, []);
 
   // User profile management
@@ -288,6 +288,9 @@ export const useLanguageContent = () => {
   const hasSecondaryLanguage = useCallback((language) => {
     return languagePreferences.secondaryLanguages.includes(language);
   }, [languagePreferences.secondaryLanguages]);
+  const setLanguageContent=(language)=>{
+    languagePreferences.primaryLanguage=language;
+  }
 
   return {
     currentLanguage: languagePreferences.primaryLanguage,
@@ -295,7 +298,8 @@ export const useLanguageContent = () => {
     autoTranslate: languagePreferences.autoTranslate,
     changeLanguage: changePrimaryLanguage,
     isCurrentLanguage,
-    hasSecondaryLanguage
+    hasSecondaryLanguage,
+    setLanguageContent
   };
 };
 

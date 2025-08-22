@@ -391,6 +391,10 @@ export const userStoreHelpers = {
     const state = useUserStore.getState();
     return state.languagePreferences.primaryLanguage;
   },
+  setUserLanguage: (language)=>{
+    const state=useUserStore.getState();
+    state.languagePreferences.primaryLanguage=language;
+  },
 
   // Check if user has secondary language
   hasSecondaryLanguage: (language) => {

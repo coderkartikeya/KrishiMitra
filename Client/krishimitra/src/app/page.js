@@ -7,6 +7,8 @@ import {
   Facebook, Twitter, Instagram, ChevronDown, Check
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { userStoreHelpers } from '../store/userStore.js'
+
 
 // Language translations
 const translations = {
@@ -190,7 +192,7 @@ const translations = {
 };
 
 const FarmerPlatform = () => {
-  const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [currentLanguage, setCurrentLanguage] = useState(userStoreHelpers.getUserLanguage() || 'en');
   const [showLanguageModal, setShowLanguageModal] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
@@ -199,8 +201,19 @@ const FarmerPlatform = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
   const router=useRouter();
+  // const {setL}
+  
 
   const t = translations[currentLanguage];
+  
+
+  // Persist language preference to user store whenever it changes
+  useEffect(() => {
+    try {
+      userStoreHelpers.setUserLanguage(currentLanguage);
+      // console.log(userStoreHelpers.getUserLanguage());
+    } catch (e) {}
+  }, [currentLanguage]);
 
   // Typing animation for demo
   const demoText = "How can I improve my wheat yield this season?";
@@ -397,6 +410,7 @@ const FarmerPlatform = () => {
   };
 
   const handleLanguageSelect = (langCode) => {
+    userStoreHelpers.setUserLanguage(langCode);
     setCurrentLanguage(langCode);
     setShowLanguageModal(false);
   };
@@ -406,7 +420,7 @@ const FarmerPlatform = () => {
     setShowAuthModal(true);
   };
 
-  if (showLanguageModal) {
+  if (showLanguageModal && currentLanguage) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
