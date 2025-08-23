@@ -1,482 +1,373 @@
-'use client'
-import React, { useState, useRef } from 'react';
-import { 
-  Camera, Upload, RefreshCw, AlertTriangle, 
-  CheckCircle, Info, ChevronDown, ChevronUp, 
-  Leaf, Droplets, Sun, Wind, Shield
-} from 'lucide-react';
+"use client";
 
-export default function PlantDisease() {
-  const [image, setImage] = useState(null);
+import { useState } from 'react';
+import Image from 'next/image';
+
+export default function PlantDiseasePage() {
+  const [selectedImage, setSelectedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [result, setResult] = useState(null);
-  const [activeTab, setActiveTab] = useState('treatment');
-  const [expandedSection, setExpandedSection] = useState(null);
-  const fileInputRef = useRef(null);
+  const [detectionResult, setDetectionResult] = useState(null);
+  const [activeTab, setActiveTab] = useState('detection');
 
-  // Disease database with treatments and prevention measures
-  const diseaseDatabase = {
-    'late_blight': {
-      name: 'आलू का झुलसा रोग (Late Blight)',
-      description: 'यह फंगस फाइटोफ्थोरा इनफेस्टन्स के कारण होता है। इससे पत्तियों पर भूरे रंग के धब्बे बनते हैं और फसल को गंभीर नुकसान हो सकता है।',
-      englishDescription: 'Caused by the fungus Phytophthora infestans. It creates brown lesions on leaves and can cause severe crop damage.',
-      treatment: [
-        'कॉपर आधारित फफूंदनाशक का छिड़काव करें',
-        'प्रभावित पत्तियों को हटा दें और नष्ट कर दें',
-        'मैंकोजेब या क्लोरोथैलोनिल का उपयोग करें'
-      ],
-      englishTreatment: [
-        'Apply copper-based fungicides',
-        'Remove and destroy infected plants',
-        'Use Mancozeb or Chlorothalonil'
-      ],
+  // Common plant diseases with information and prevention methods
+  const diseaseLibrary = [
+    {
+      id: 1,
+      name: "Late Blight",
+      crops: ["Potato", "Tomato"],
+      symptoms: "Dark, water-soaked spots on leaves that quickly enlarge and turn brown with a slight yellow border. White fungal growth may appear on the undersides of leaves in humid conditions.",
+      causes: "Caused by the fungus-like oomycete pathogen Phytophthora infestans, favored by cool, wet weather.",
       prevention: [
-        'प्रतिरोधी किस्मों का उपयोग करें',
-        'फसल चक्र अपनाएं',
-        'पौधों के बीच पर्याप्त हवा का संचार सुनिश्चित करें',
-        'सिंचाई के दौरान पत्तियों को गीला होने से बचाएं'
+        "Use resistant varieties when available",
+        "Ensure good air circulation by proper plant spacing",
+        "Avoid overhead irrigation and water early in the day",
+        "Apply copper-based fungicides preventatively",
+        "Practice crop rotation (3-4 years)"
       ],
-      englishPrevention: [
-        'Use resistant varieties',
-        'Practice crop rotation',
-        'Ensure adequate air circulation between plants',
-        'Avoid wetting leaves during irrigation'
+      safeInsecticides: [
+        "Copper-based fungicides (Bordeaux mixture)",
+        "Chlorothalonil",
+        "Mancozeb (when used according to label instructions)"
       ],
-      severity: 'high',
-      image: '/images/late_blight.jpg'
+      image: "/diseases/late-blight.jpg"
     },
-    'powdery_mildew': {
-      name: 'चूर्णिल फफूंदी (Powdery Mildew)',
-      description: 'यह फंगल रोग पत्तियों, तनों और फलों पर सफेद पाउडर जैसी परत बनाता है। यह पौधे की वृद्धि को धीमा कर देता है और उपज को कम कर सकता है।',
-      englishDescription: 'This fungal disease creates a white powdery layer on leaves, stems, and fruits. It slows plant growth and can reduce yield.',
-      treatment: [
-        'नीम तेल या पोटेशियम बाइकार्बोनेट स्प्रे का उपयोग करें',
-        'सल्फर आधारित फफूंदनाशक लगाएं',
-        'दूध और पानी का मिश्रण (1:10) स्प्रे करें'
-      ],
-      englishTreatment: [
-        'Use neem oil or potassium bicarbonate spray',
-        'Apply sulfur-based fungicides',
-        'Spray milk and water mixture (1:10)'
-      ],
+    {
+      id: 2,
+      name: "Powdery Mildew",
+      crops: ["Cucumber", "Squash", "Pumpkin", "Zucchini", "Melon"],
+      symptoms: "White powdery spots on leaves and stems that eventually cover the entire surface. Leaves may yellow, curl, and die prematurely.",
+      causes: "Caused by several species of fungi, favored by warm, dry conditions with high humidity.",
       prevention: [
-        'पौधों के बीच उचित दूरी बनाए रखें',
-        'प्रतिरोधी किस्मों का चयन करें',
-        'ड्रिप सिंचाई का उपयोग करें',
-        'स्वस्थ बीज और रोपण सामग्री का उपयोग करें'
+        "Plant resistant varieties",
+        "Ensure adequate spacing for air circulation",
+        "Avoid excessive nitrogen fertilization",
+        "Remove and destroy infected plant parts",
+        "Apply preventative fungicides at first sign of disease"
       ],
-      englishPrevention: [
-        'Maintain proper spacing between plants',
-        'Select resistant varieties',
-        'Use drip irrigation',
-        'Use healthy seeds and planting material'
+      safeInsecticides: [
+        "Sulfur-based fungicides",
+        "Neem oil",
+        "Potassium bicarbonate",
+        "Bacillus subtilis (biological control)"
       ],
-      severity: 'medium',
-      image: '/images/powdery_mildew.jpg'
+      image: "/diseases/powdery-mildew.jpg"
     },
-    'leaf_spot': {
-      name: 'पत्ती धब्बा रोग (Leaf Spot)',
-      description: 'यह विभिन्न फंगी के कारण होता है और पत्तियों पर भूरे या काले धब्बे बनाता है। गंभीर मामलों में, पत्तियां पीली हो सकती हैं और गिर सकती हैं।',
-      englishDescription: 'Caused by various fungi, it creates brown or black spots on leaves. In severe cases, leaves may yellow and fall off.',
-      treatment: [
-        'कॉपर ऑक्सीक्लोराइड या मैंकोजेब का छिड़काव करें',
-        'प्रभावित पत्तियों को हटा दें',
-        'नीम आधारित उत्पादों का उपयोग करें'
-      ],
-      englishTreatment: [
-        'Spray copper oxychloride or mancozeb',
-        'Remove affected leaves',
-        'Use neem-based products'
-      ],
+    {
+      id: 3,
+      name: "Bacterial Leaf Spot",
+      crops: ["Pepper", "Tomato", "Lettuce"],
+      symptoms: "Small, dark, water-soaked spots on leaves that enlarge and turn brown with yellow halos. Spots may merge, causing leaves to yellow and drop.",
+      causes: "Caused by various species of bacteria, spread by water splash and favored by warm, wet conditions.",
       prevention: [
-        'ओवरहेड सिंचाई से बचें',
-        'फसल अवशेषों को खेत से हटा दें',
-        'फसल चक्र अपनाएं',
-        'पौधों के बीच हवा का संचार बढ़ाएं'
+        "Use disease-free seeds and transplants",
+        "Practice crop rotation (2-3 years)",
+        "Avoid overhead irrigation",
+        "Remove and destroy infected plant debris",
+        "Apply copper-based bactericides preventatively"
       ],
-      englishPrevention: [
-        'Avoid overhead irrigation',
-        'Remove crop debris from the field',
-        'Practice crop rotation',
-        'Increase air circulation between plants'
+      safeInsecticides: [
+        "Copper-based bactericides",
+        "Streptomycin (in some regions, for certain crops)",
+        "Bacillus subtilis (biological control)"
       ],
-      severity: 'medium',
-      image: '/images/leaf_spot.jpg'
-    },
-    'healthy': {
-      name: 'स्वस्थ पौधा (Healthy Plant)',
-      description: 'आपका पौधा स्वस्थ दिखाई दे रहा है और कोई रोग के लक्षण नहीं हैं।',
-      englishDescription: 'Your plant appears healthy with no signs of disease.',
-      treatment: [
-        'नियमित देखभाल जारी रखें',
-        'उचित पोषण और सिंचाई प्रदान करें'
-      ],
-      englishTreatment: [
-        'Continue regular care',
-        'Provide proper nutrition and irrigation'
-      ],
-      prevention: [
-        'नियमित निगरानी करें',
-        'स्वच्छ खेती प्रथाओं का पालन करें',
-        'संतुलित उर्वरक का उपयोग करें',
-        'समय पर कीट प्रबंधन करें'
-      ],
-      englishPrevention: [
-        'Monitor regularly',
-        'Follow clean farming practices',
-        'Use balanced fertilizers',
-        'Perform timely pest management'
-      ],
-      severity: 'none',
-      image: '/images/healthy_plant.jpg'
+      image: "/diseases/bacterial-leaf-spot.jpg"
     }
-  };
+  ];
 
-  const handleImageUpload = (e) => {
+  // Handle image selection
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      setImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result);
-      };
-      reader.readAsDataURL(file);
-      setResult(null); // Clear previous results
+    if (file) {
+      setSelectedImage(file);
+      setPreviewUrl(URL.createObjectURL(file));
+      setDetectionResult(null); // Reset previous results
     }
   };
 
-  const handleCameraCapture = () => {
-    fileInputRef.current.click();
-  };
-
-  const analyzeImage = () => {
-    if (!image) return;
+  // Handle disease detection (simulated)
+  const detectDisease = () => {
+    if (!selectedImage) return;
     
     setIsAnalyzing(true);
     
-    // Simulate API call to disease detection model
+    // Simulate API call with timeout
     setTimeout(() => {
-      // For demo purposes, randomly select a disease or healthy status
-      const diseases = Object.keys(diseaseDatabase);
-      const detectedDisease = diseases[Math.floor(Math.random() * diseases.length)];
-      
-      setResult({
-        disease: detectedDisease,
-        confidence: Math.floor(Math.random() * 30) + 70, // Random confidence between 70-99%
-        ...diseaseDatabase[detectedDisease]
-      });
-      
+      // For demo purposes, randomly select a disease from the library
+      const randomIndex = Math.floor(Math.random() * diseaseLibrary.length);
+      setDetectionResult(diseaseLibrary[randomIndex]);
       setIsAnalyzing(false);
     }, 2000);
   };
 
-  const resetAnalysis = () => {
-    setImage(null);
-    setPreviewUrl(null);
-    setResult(null);
-  };
-
-  const toggleSection = (section) => {
-    setExpandedSection(expandedSection === section ? null : section);
-  };
-
-  const getSeverityColor = (severity) => {
-    switch (severity) {
-      case 'high': return 'text-red-600';
-      case 'medium': return 'text-yellow-600';
-      case 'low': return 'text-orange-600';
-      case 'none': return 'text-green-600';
-      default: return 'text-gray-600';
-    }
-  };
-
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 flex items-center mb-6">
-        <Leaf className="mr-2 text-green-600" />
-        पौधा रोग पहचान (Plant Disease Detection)
-      </h1>
+    <div className="min-h-screen bg-white">
+      {/* Header section */}
+      <div className="relative h-40 bg-gradient-to-r from-green-600 to-green-800 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/farm-pattern.svg')] opacity-20"></div>
+        <div className="container mx-auto px-4 h-full flex items-center">
+          <div className="text-white z-10">
+            <h1 className="text-3xl font-bold mb-1">Plant Disease Detection</h1>
+            <p className="text-lg">Identify diseases and get prevention recommendations</p>
+          </div>
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column - Image Upload and Preview */}
-        <div className="bg-white rounded-xl shadow-md p-6 border-2 border-green-100">
-          <h2 className="text-xl font-semibold mb-4">छवि अपलोड करें (Upload Image)</h2>
-          
-          <div className="mb-6">
-            <p className="text-gray-600 mb-4">
-              अपने पौधे की छवि अपलोड करें या कैमरे से कैप्चर करें। हम आपके पौधे के स्वास्थ्य का विश्लेषण करेंगे और किसी भी रोग की पहचान करेंगे।
-              <br />
-              <span className="text-sm text-gray-500">
-                Upload or capture an image of your plant. We'll analyze your plant's health and identify any diseases.
-              </span>
-            </p>
+      {/* Main content */}
+      <div className="container mx-auto px-4 py-8">
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 mb-6">
+          <button 
+            className={`py-2 px-4 font-medium ${activeTab === 'detection' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-500'}`}
+            onClick={() => setActiveTab('detection')}
+          >
+            Disease Detection
+          </button>
+          <button 
+            className={`py-2 px-4 font-medium ${activeTab === 'library' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-500'}`}
+            onClick={() => setActiveTab('library')}
+          >
+            Disease Library
+          </button>
+          <button 
+            className={`py-2 px-4 font-medium ${activeTab === 'prevention' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-500'}`}
+            onClick={() => setActiveTab('prevention')}
+          >
+            Safe Practices
+          </button>
+        </div>
+
+        {/* Disease Detection Tab */}
+        {activeTab === 'detection' && (
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Left column - Upload and preview */}
+            <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
+              <h2 className="text-xl font-semibold mb-4">Upload Plant Image</h2>
+              <p className="text-gray-600 mb-4">
+                Take a clear photo of the affected plant part (leaf, stem, fruit) and upload it for analysis.
+              </p>
+              
+              <div className="mb-4">
+                <label className="block mb-2 text-sm font-medium text-gray-700">
+                  Select image
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-md file:border-0
+                    file:text-sm file:font-medium
+                    file:bg-green-50 file:text-green-700
+                    hover:file:bg-green-100"
+                />
+              </div>
+              
+              {previewUrl && (
+                <div className="mt-4">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Image Preview</p>
+                  <div className="relative h-64 w-full overflow-hidden rounded-lg border border-gray-200">
+                    <Image
+                      src={previewUrl}
+                      alt="Plant preview"
+                      fill
+                      style={{ objectFit: 'contain' }}
+                    />
+                  </div>
+                  
+                  <button
+                    onClick={detectDisease}
+                    disabled={isAnalyzing}
+                    className="mt-4 w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md shadow-sm disabled:bg-gray-400"
+                  >
+                    {isAnalyzing ? 'Analyzing...' : 'Detect Disease'}
+                  </button>
+                </div>
+              )}
+            </div>
             
-            <div className="flex flex-wrap gap-4">
-              <button 
-                onClick={() => fileInputRef.current.click()}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                <Upload className="mr-2 h-5 w-5" />
-                अपलोड करें (Upload)
-              </button>
-              
-              <button 
-                onClick={handleCameraCapture}
-                className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-              >
-                <Camera className="mr-2 h-5 w-5" />
-                कैमरा (Camera)
-              </button>
-              
-              <input 
-                type="file" 
-                ref={fileInputRef}
-                onChange={handleImageUpload}
-                accept="image/*"
-                className="hidden"
-              />
+            {/* Right column - Results */}
+            <div>
+              {detectionResult ? (
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-semibold text-red-600">{detectionResult.name}</h2>
+                    <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+                      Detected
+                    </span>
+                  </div>
+                  
+                  <p className="text-sm text-gray-500 mb-2">
+                    Commonly affects: {detectionResult.crops.join(", ")}
+                  </p>
+                  
+                  <h3 className="font-medium text-gray-900 mt-4 mb-2">Symptoms</h3>
+                  <p className="text-gray-700 mb-4">{detectionResult.symptoms}</p>
+                  
+                  <h3 className="font-medium text-gray-900 mb-2">Causes</h3>
+                  <p className="text-gray-700 mb-4">{detectionResult.causes}</p>
+                  
+                  <h3 className="font-medium text-gray-900 mb-2">Prevention Methods</h3>
+                  <ul className="list-disc pl-5 mb-4">
+                    {detectionResult.prevention.map((method, index) => (
+                      <li key={index} className="text-gray-700 mb-1">{method}</li>
+                    ))}
+                  </ul>
+                  
+                  <h3 className="font-medium text-gray-900 mb-2">Safe Treatment Options</h3>
+                  <ul className="list-disc pl-5">
+                    {detectionResult.safeInsecticides.map((option, index) => (
+                      <li key={index} className="text-gray-700 mb-1">{option}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-full flex flex-col items-center justify-center text-center">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Disease Detected Yet</h3>
+                  <p className="text-gray-600">
+                    Upload a clear image of the affected plant part to get an analysis and treatment recommendations.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
-          
-          {previewUrl && (
-            <div className="mb-6">
-              <h3 className="font-medium text-gray-700 mb-2">पूर्वावलोकन (Preview)</h3>
-              <div className="relative border-2 border-dashed border-gray-300 rounded-lg p-2 bg-gray-50">
-                <img 
-                  src={previewUrl} 
-                  alt="Plant preview" 
-                  className="w-full h-auto max-h-80 object-contain rounded-lg"
-                />
-                <button 
-                  onClick={resetAnalysis}
-                  className="absolute top-3 right-3 bg-white p-1 rounded-full shadow-md hover:bg-gray-100"
-                >
-                  <RefreshCw className="h-5 w-5 text-gray-600" />
-                </button>
-              </div>
-            </div>
-          )}
-          
-          {previewUrl && !isAnalyzing && !result && (
-            <button 
-              onClick={analyzeImage}
-              className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center"
-            >
-              <Leaf className="mr-2 h-5 w-5" />
-              विश्लेषण करें (Analyze)
-            </button>
-          )}
-          
-          {isAnalyzing && (
-            <div className="flex flex-col items-center justify-center py-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mb-3"></div>
-              <p className="text-gray-600">विश्लेषण हो रहा है... (Analyzing...)</p>
-            </div>
-          )}
-        </div>
-        
-        {/* Right Column - Results and Recommendations */}
-        <div className="bg-white rounded-xl shadow-md p-6 border-2 border-green-100">
-          {!result && !isAnalyzing ? (
-            <div className="flex flex-col items-center justify-center h-full py-10 text-center">
-              <Leaf className="h-16 w-16 text-gray-300 mb-4" />
-              <h3 className="text-xl font-medium text-gray-700 mb-2">पौधे का विश्लेषण करने के लिए तैयार</h3>
-              <p className="text-gray-500 max-w-md">
-                अपने पौधे की छवि अपलोड करें और हम आपको बताएंगे कि क्या कोई रोग है और आगे क्या करना है।
-                <br /><br />
-                Upload an image of your plant and we'll tell you if there's any disease and what to do next.
-              </p>
-            </div>
-          ) : result ? (
-            <div>
-              <div className="flex items-start justify-between mb-6">
-                <div>
-                  <h2 className="text-xl font-semibold">{result.name}</h2>
-                  <div className="flex items-center mt-1">
-                    <span className={`font-medium ${getSeverityColor(result.severity)}`}>
-                      {result.severity === 'high' ? 'उच्च गंभीरता (High Severity)' : 
-                       result.severity === 'medium' ? 'मध्यम गंभीरता (Medium Severity)' : 
-                       result.severity === 'low' ? 'कम गंभीरता (Low Severity)' : 
-                       'स्वस्थ (Healthy)'}
-                    </span>
-                    <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded">
-                      {result.confidence}% विश्वास (Confidence)
-                    </span>
-                  </div>
-                </div>
-                {result.severity !== 'none' && (
-                  <div className="bg-yellow-50 p-2 rounded-lg border border-yellow-200">
-                    <AlertTriangle className="h-6 w-6 text-yellow-500" />
-                  </div>
-                )}
-                {result.severity === 'none' && (
-                  <div className="bg-green-50 p-2 rounded-lg border border-green-200">
-                    <CheckCircle className="h-6 w-6 text-green-500" />
-                  </div>
-                )}
-              </div>
-              
-              <div className="mb-6">
-                <div 
-                  className="border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-50"
-                  onClick={() => toggleSection('description')}
-                >
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-medium text-gray-800 flex items-center">
-                      <Info className="h-5 w-5 mr-2 text-blue-500" />
-                      विवरण (Description)
-                    </h3>
-                    {expandedSection === 'description' ? 
-                      <ChevronUp className="h-5 w-5 text-gray-500" /> : 
-                      <ChevronDown className="h-5 w-5 text-gray-500" />
-                    }
-                  </div>
-                  {expandedSection === 'description' && (
-                    <div className="mt-3 text-gray-600">
-                      <p className="mb-2">{result.description}</p>
-                      <p className="text-sm text-gray-500">{result.englishDescription}</p>
+        )}
+
+        {/* Disease Library Tab */}
+        {activeTab === 'library' && (
+          <div>
+            <h2 className="text-2xl font-semibold mb-6">Common Plant Diseases</h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {diseaseLibrary.map((disease) => (
+                <div key={disease.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                  <div className="h-48 relative">
+                    <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-500">Image placeholder</span>
                     </div>
-                  )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{disease.name}</h3>
+                    <p className="text-sm text-gray-500 mb-3">
+                      Affects: {disease.crops.join(", ")}
+                    </p>
+                    <p className="text-gray-700 text-sm mb-3 line-clamp-3">
+                      {disease.symptoms}
+                    </p>
+                    <button className="text-green-600 hover:text-green-700 text-sm font-medium">
+                      View Details →
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Prevention Tab */}
+        {activeTab === 'prevention' && (
+          <div>
+            <h2 className="text-2xl font-semibold mb-6">Safe Farming Practices</h2>
+            
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Integrated Pest Management (IPM)</h3>
+              <p className="text-gray-700 mb-4">
+                IPM is an ecosystem-based strategy that focuses on long-term prevention of pests or their damage through a combination of techniques such as biological control, habitat manipulation, modification of cultural practices, and use of resistant varieties.
+              </p>
               
-              <div className="mb-6">
-                <div className="flex border-b border-gray-200">
-                  <button
-                    className={`py-2 px-4 font-medium ${activeTab === 'treatment' ? 'text-green-600 border-b-2 border-green-500' : 'text-gray-500 hover:text-green-600'}`}
-                    onClick={() => setActiveTab('treatment')}
-                  >
-                    उपचार (Treatment)
-                  </button>
-                  <button
-                    className={`py-2 px-4 font-medium ${activeTab === 'prevention' ? 'text-green-600 border-b-2 border-green-500' : 'text-gray-500 hover:text-green-600'}`}
-                    onClick={() => setActiveTab('prevention')}
-                  >
-                    रोकथाम (Prevention)
-                  </button>
+              <div className="grid md:grid-cols-2 gap-6 mt-6">
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-green-800 mb-2">Benefits of IPM</h4>
+                  <ul className="list-disc pl-5">
+                    <li className="text-gray-700 mb-1">Reduces environmental impact</li>
+                    <li className="text-gray-700 mb-1">Minimizes risks to human health</li>
+                    <li className="text-gray-700 mb-1">Promotes sustainable agriculture</li>
+                    <li className="text-gray-700 mb-1">Reduces the likelihood of pesticide resistance</li>
+                    <li className="text-gray-700 mb-1">Cost-effective in the long term</li>
+                  </ul>
                 </div>
                 
-                <div className="mt-4">
-                  {activeTab === 'treatment' && (
-                    <div>
-                      <h3 className="font-medium text-gray-800 mb-3 flex items-center">
-                        <Droplets className="h-5 w-5 mr-2 text-blue-500" />
-                        अनुशंसित उपचार (Recommended Treatment)
-                      </h3>
-                      <ul className="space-y-2">
-                        {result.treatment.map((item, index) => (
-                          <li key={index} className="flex items-start">
-                            <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-blue-100 text-blue-800 text-sm font-medium mr-3 mt-0.5">
-                              {index + 1}
-                            </span>
-                            <span className="text-gray-700">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <div className="mt-3 text-sm text-gray-500">
-                        <h4 className="font-medium mb-2">English:</h4>
-                        <ul className="space-y-1 list-disc pl-5">
-                          {result.englishTreatment.map((item, index) => (
-                            <li key={index}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {activeTab === 'prevention' && (
-                    <div>
-                      <h3 className="font-medium text-gray-800 mb-3 flex items-center">
-                        <Shield className="h-5 w-5 mr-2 text-purple-500" />
-                        भविष्य में रोकथाम (Future Prevention)
-                      </h3>
-                      <ul className="space-y-2">
-                        {result.prevention.map((item, index) => (
-                          <li key={index} className="flex items-start">
-                            <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-purple-100 text-purple-800 text-sm font-medium mr-3 mt-0.5">
-                              {index + 1}
-                            </span>
-                            <span className="text-gray-700">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <div className="mt-3 text-sm text-gray-500">
-                        <h4 className="font-medium mb-2">English:</h4>
-                        <ul className="space-y-1 list-disc pl-5">
-                          {result.englishPrevention.map((item, index) => (
-                            <li key={index}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  )}
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-blue-800 mb-2">Key IPM Strategies</h4>
+                  <ul className="list-disc pl-5">
+                    <li className="text-gray-700 mb-1">Regular monitoring of crops</li>
+                    <li className="text-gray-700 mb-1">Identifying pests accurately</li>
+                    <li className="text-gray-700 mb-1">Setting action thresholds</li>
+                    <li className="text-gray-700 mb-1">Using multiple control methods</li>
+                    <li className="text-gray-700 mb-1">Evaluating results</li>
+                  </ul>
                 </div>
               </div>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Cultural Practices</h3>
+                <ul className="space-y-3">
+                  <li className="flex">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700"><strong>Crop rotation:</strong> Avoid planting the same crop in the same location for consecutive seasons to break disease cycles.</span>
+                  </li>
+                  <li className="flex">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700"><strong>Proper spacing:</strong> Ensure adequate spacing between plants to promote air circulation and reduce humidity.</span>
+                  </li>
+                  <li className="flex">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700"><strong>Sanitation:</strong> Remove and destroy infected plant debris to prevent disease spread.</span>
+                  </li>
+                  <li className="flex">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700"><strong>Timing:</strong> Plant at optimal times to avoid peak pest pressure periods.</span>
+                  </li>
+                </ul>
+              </div>
               
-              <button 
-                onClick={resetAnalysis}
-                className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center"
-              >
-                <RefreshCw className="mr-2 h-5 w-5" />
-                नया विश्लेषण करें (New Analysis)
-              </button>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Biological Controls</h3>
+                <ul className="space-y-3">
+                  <li className="flex">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700"><strong>Beneficial insects:</strong> Encourage ladybugs, lacewings, and predatory mites that feed on pest insects.</span>
+                  </li>
+                  <li className="flex">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700"><strong>Microbial products:</strong> Use Bacillus thuringiensis (Bt), Bacillus subtilis, and other beneficial microbes.</span>
+                  </li>
+                  <li className="flex">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700"><strong>Companion planting:</strong> Plant species that repel pests or attract beneficial insects.</span>
+                  </li>
+                  <li className="flex">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700"><strong>Trap crops:</strong> Plant species that attract pests away from main crops.</span>
+                  </li>
+                </ul>
+              </div>
             </div>
-          ) : null}
-        </div>
-      </div>
-      
-      {/* How to Use Section */}
-      <div className="mt-8 bg-white rounded-xl shadow-md p-6 border-2 border-blue-100">
-        <h2 className="text-xl font-semibold mb-4">कैसे उपयोग करें (How to Use)</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="flex flex-col items-center text-center p-4 bg-blue-50 rounded-lg">
-            <div className="bg-blue-100 p-3 rounded-full mb-3">
-              <Camera className="h-6 w-6 text-blue-600" />
-            </div>
-            <h3 className="font-medium text-gray-800 mb-2">1. छवि अपलोड करें</h3>
-            <p className="text-gray-600 text-sm">अपने पौधे की स्पष्ट छवि अपलोड करें या कैमरे से कैप्चर करें</p>
-            <p className="text-gray-500 text-xs mt-1">Upload or capture a clear image of your plant</p>
           </div>
-          
-          <div className="flex flex-col items-center text-center p-4 bg-green-50 rounded-lg">
-            <div className="bg-green-100 p-3 rounded-full mb-3">
-              <Leaf className="h-6 w-6 text-green-600" />
-            </div>
-            <h3 className="font-medium text-gray-800 mb-2">2. विश्लेषण करें</h3>
-            <p className="text-gray-600 text-sm">"विश्लेषण करें" बटन पर क्लिक करें और हमारा AI आपके पौधे का निदान करेगा</p>
-            <p className="text-gray-500 text-xs mt-1">Click "Analyze" and our AI will diagnose your plant</p>
-          </div>
-          
-          <div className="flex flex-col items-center text-center p-4 bg-purple-50 rounded-lg">
-            <div className="bg-purple-100 p-3 rounded-full mb-3">
-              <Droplets className="h-6 w-6 text-purple-600" />
-            </div>
-            <h3 className="font-medium text-gray-800 mb-2">3. उपचार प्राप्त करें</h3>
-            <p className="text-gray-600 text-sm">विस्तृत उपचार और रोकथाम के सुझाव प्राप्त करें</p>
-            <p className="text-gray-500 text-xs mt-1">Get detailed treatment and prevention suggestions</p>
-          </div>
-        </div>
-      </div>
-      
-      {/* Tips Section */}
-      <div className="mt-6 bg-yellow-50 rounded-xl p-4 border border-yellow-200">
-        <div className="flex items-start">
-          <div className="bg-yellow-100 p-2 rounded-full mr-3">
-            <Info className="h-5 w-5 text-yellow-600" />
-          </div>
-          <div>
-            <h3 className="font-medium text-gray-800 mb-1">सर्वोत्तम परिणामों के लिए सुझाव (Tips for Best Results)</h3>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>• प्रभावित पत्तियों या तनों की स्पष्ट, करीबी तस्वीरें लें</li>
-              <li>• अच्छे प्रकाश में छवियां लें</li>
-              <li>• कई कोणों से छवियां लें यदि आप अनिश्चित हैं</li>
-            </ul>
-            <p className="text-xs text-gray-500 mt-2">
-              Take clear, close-up photos of affected leaves or stems • Capture images in good lighting • Take images from multiple angles if unsure
-            </p>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
