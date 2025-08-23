@@ -103,12 +103,12 @@ export default function MyCrops() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero section with farm background */}
-      <div className="relative h-64 bg-gradient-to-r from-green-600 to-green-800 overflow-hidden">
+      <div className="relative h-40 bg-gradient-to-r from-green-600 to-green-800 overflow-hidden">
         <div className="absolute inset-0 bg-[url('/farm-pattern.svg')] opacity-20"></div>
         <div className="container mx-auto px-4 h-full flex items-center">
           <div className="text-white z-10">
-            <h1 className="text-4xl font-bold mb-2">My Crops</h1>
-            <p className="text-xl">Manage your farm with AI-powered insights</p>
+            <h1 className="text-3xl font-bold mb-1">My Crops</h1>
+            <p className="text-lg">Manage your farm with AI-powered insights</p>
           </div>
         </div>
       </div>
