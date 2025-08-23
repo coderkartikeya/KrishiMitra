@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 
 // Define protected routes that require authentication
+// '/dashboard',
+//   '/profile',
+//   '/crops',
+//   '/plantDisease',
+//   '/schemes',
+//   '/community',
+//   '/finance',
 const protectedRoutes = [
-  '/dashboard',
-  '/profile',
-  '/crops',
-  '/plantDisease',
-  '/schemes',
-  '/community',
-  '/finance',
+  
 ];
 
 // Define public routes that don't require authentication
