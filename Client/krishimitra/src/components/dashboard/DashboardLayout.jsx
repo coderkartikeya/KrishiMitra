@@ -8,27 +8,34 @@ const DashboardLayout = ({ children, activeTab }) => {
   const router = useRouter();
 
   const handleTabChange = (tabId) => {
-    switch (tabId) {
-      case 'home':
-        router.push('/');
-        break;
-      case 'crops':
-        router.push('/crops');
-        break;
-      case 'scan':
-        router.push('/plantDisease');
-        break;
-      case 'market':
-        router.push('/market');
-        break;
-      case 'community':
-        router.push('/community');
-        break;
-      case 'profile':
-        router.push('/profile');
-        break;
-      default:
-        break;
+    // Direct routing based on the tabId which contains the full path
+    if (tabId.startsWith('/dashboard')) {
+      router.push(tabId);
+    } else {
+      // Fallback for any legacy routes
+      switch (tabId) {
+        case 'home':
+          router.push('/');
+          break;
+        case 'crops':
+          router.push('/crops');
+          break;
+        case 'scan':
+          router.push('/plantDisease');
+          break;
+        case 'market':
+          router.push('/market');
+          break;
+        case 'community':
+          router.push('/community');
+          break;
+        case 'profile':
+          router.push('/profile');
+          break;
+        default:
+          router.push('/dashboard');
+          break;
+      }
     }
   };
 

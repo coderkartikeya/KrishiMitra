@@ -4,19 +4,23 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'; // ✅ to detect current path
 import { 
-  Home, Sprout, Camera, TrendingUp, Users, FileText, DollarSign, Bot, BookOpen
+  Home, Sprout, Camera, TrendingUp, Users, FileText, DollarSign, Bot, BookOpen, 
+  Droplets, Microscope, MessageSquare
 } from 'lucide-react';
 
 const Navigation = ({ activeTab, onTabChange }) => {
    const pathname = usePathname(); // current active route
-  // Simplified navigation with fewer, more essential options for farmers
+  // Navigation items based on folder structure
   const navItems = [
     { id: '/dashboard', label: 'मुख्य पृष्ठ', englishLabel: 'Home', icon: <Home className="w-6 h-6" /> },
     { id: '/dashboard/mycrops', label: 'मेरी फसलें', englishLabel: 'My Crops', icon: <Sprout className="w-6 h-6" /> },
-    { id: '/dashboard/scan', label: 'पौधा स्कैन', englishLabel: 'Plant Scan', icon: <Camera className="w-6 h-6" /> },
+    { id: '/dashboard/plantDisease', label: 'रोग पहचान', englishLabel: 'Plant Disease', icon: <Camera className="w-6 h-6" /> },
+    { id: '/dashboard/plantscan', label: 'पौधा स्कैन', englishLabel: 'Plant Scan', icon: <Camera className="w-6 h-6" /> },
     { id: '/dashboard/market', label: 'बाज़ार भाव', englishLabel: 'Market', icon: <TrendingUp className="w-6 h-6" /> },
     { id: '/dashboard/schemes', label: 'सरकारी योजनाएँ', englishLabel: 'Schemes', icon: <FileText className="w-6 h-6" /> },
-    { id: '/dashboard/assistant', label: 'सहायता', englishLabel: 'Help', icon: <Bot className="w-6 h-6" /> },
+    { id: '/dashboard/soilAnalysis', label: 'मिट्टी विश्लेषण', englishLabel: 'Soil Analysis', icon: <Microscope className="w-6 h-6" /> },
+    { id: '/dashboard/community', label: 'समुदाय', englishLabel: 'Community', icon: <MessageSquare className="w-6 h-6" /> },
+    { id: '/dashboard/help', label: 'सहायता', englishLabel: 'Help', icon: <Bot className="w-6 h-6" /> },
   ];
 
   return (
