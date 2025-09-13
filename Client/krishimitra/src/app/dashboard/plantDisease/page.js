@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import DashboardLayout from '../../../components/dashboard/DashboardLayout';
+import { Camera, Microscope, Shield } from 'lucide-react';
 
 export default function PlantDiseasePage() {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -101,45 +103,39 @@ export default function PlantDiseasePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header section */}
-      <div className="relative h-40 bg-gradient-to-r from-green-600 to-green-800 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/farm-pattern.svg')] opacity-20"></div>
-        <div className="container mx-auto px-4 h-full flex items-center">
-          <div className="text-white z-10">
-            <h1 className="text-3xl font-bold mb-1">Plant Disease Detection</h1>
-            <p className="text-lg">Identify diseases and get prevention recommendations</p>
-          </div>
-        </div>
+    <DashboardLayout 
+      title="Plant Disease Detection" 
+      subtitle="Identify diseases and get prevention recommendations"
+      icon={<Camera className="w-6 h-6" />}
+    >
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200 mb-6">
+        <button 
+          className={`py-2 px-4 font-medium ${activeTab === 'detection' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-500'}`}
+          onClick={() => setActiveTab('detection')}
+        >
+          <Camera className="inline-block w-4 h-4 mr-2" />
+          Disease Detection
+        </button>
+        <button 
+          className={`py-2 px-4 font-medium ${activeTab === 'library' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-500'}`}
+          onClick={() => setActiveTab('library')}
+        >
+          <Microscope className="inline-block w-4 h-4 mr-2" />
+          Disease Library
+        </button>
+        <button 
+          className={`py-2 px-4 font-medium ${activeTab === 'prevention' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-500'}`}
+          onClick={() => setActiveTab('prevention')}
+        >
+          <Shield className="inline-block w-4 h-4 mr-2" />
+          Safe Practices
+        </button>
       </div>
 
-      {/* Main content */}
-      <div className="container mx-auto px-4 py-8">
-        {/* Tabs */}
-        <div className="flex border-b border-gray-200 mb-6">
-          <button 
-            className={`py-2 px-4 font-medium ${activeTab === 'detection' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-500'}`}
-            onClick={() => setActiveTab('detection')}
-          >
-            Disease Detection
-          </button>
-          <button 
-            className={`py-2 px-4 font-medium ${activeTab === 'library' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-500'}`}
-            onClick={() => setActiveTab('library')}
-          >
-            Disease Library
-          </button>
-          <button 
-            className={`py-2 px-4 font-medium ${activeTab === 'prevention' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-500'}`}
-            onClick={() => setActiveTab('prevention')}
-          >
-            Safe Practices
-          </button>
-        </div>
-
-        {/* Disease Detection Tab */}
-        {activeTab === 'detection' && (
-          <div className="grid md:grid-cols-2 gap-8">
+      {/* Disease Detection Tab */}
+      {activeTab === 'detection' && (
+        <div className="grid md:grid-cols-2 gap-8">
             {/* Left column - Upload and preview */}
             <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
               <h2 className="text-xl font-semibold mb-4">Upload Plant Image</h2>
@@ -239,8 +235,8 @@ export default function PlantDiseasePage() {
           </div>
         )}
 
-        {/* Disease Library Tab */}
-        {activeTab === 'library' && (
+      {/* Disease Library Tab */}
+      {activeTab === 'library' && (
           <div>
             <h2 className="text-2xl font-semibold mb-6">Common Plant Diseases</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -269,8 +265,8 @@ export default function PlantDiseasePage() {
           </div>
         )}
 
-        {/* Prevention Tab */}
-        {activeTab === 'prevention' && (
+      {/* Prevention Tab */}
+      {activeTab === 'prevention' && (
           <div>
             <h2 className="text-2xl font-semibold mb-6">Safe Farming Practices</h2>
             
@@ -366,9 +362,8 @@ export default function PlantDiseasePage() {
                 </ul>
               </div>
             </div>
-          </div>
-        )}
-      </div>
-    </div>
+        </div>
+      )}
+    </DashboardLayout>
   );
 }

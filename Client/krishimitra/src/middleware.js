@@ -1,15 +1,20 @@
 import { NextResponse } from 'next/server';
+import { verifyToken } from './utils/jwt.js';
+import { authHelpers } from './store/authStore.js';
+
 
 // Define protected routes that require authentication
-// '/dashboard',
-//   '/profile',
-//   '/crops',
-//   '/plantDisease',
-//   '/schemes',
-//   '/community',
-//   '/finance',
 const protectedRoutes = [
-  
+  // '/dashboard',
+  // '/profile',
+  // '/mycrops',
+  // '/plantDisease',
+  // '/plantscan',
+  '/market',
+  // '/schemes',
+  // '/soilAnalysis',
+  // '/community',
+  // '/help'
 ];
 
 // Define public routes that don't require authentication
@@ -19,19 +24,34 @@ const publicRoutes = [
   '/signup',
 ];
 
-export function middleware(request) {
+// Function to verify JWT token
+async function verifyAuthToken(token) {
+  try {
+    if (!token) return false;
+    const decoded = verifyToken(token);
+    return decoded && decoded.userId;
+  } catch (error) {
+    console.error('Token verification failed:', error);
+    return false;
+  }
+}
+
+export async function middleware(request) {
   // Get the pathname from the URL
   const { pathname } = request.nextUrl;
+  console.log(pathname);
   
   // Check if the current path is a protected route
   const isProtectedRoute = protectedRoutes.some(route => 
     pathname === route || pathname.startsWith(`${route}/`)
   );
   
-  // Check if user is authenticated by looking for the auth cookie
-  // In a real app, you would validate the token properly
-  const authCookie = request.cookies.get('auth_token')?.value;
-  const isAuthenticated = !!authCookie;
+  // Get access token from cookies
+  const accessToken = request.cookies.get('accessToken')?.value;
+  // console.log(accessToken);
+  
+  // Verify the token
+  const isAuthenticated = authHelpers.isAuthenticated();
   
   // If trying to access a protected route without authentication
   if (isProtectedRoute && !isAuthenticated) {

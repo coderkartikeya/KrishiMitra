@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Navbar from '../../../components/NavBar';
 
 export default function HelpSupport() {
+  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -130,6 +133,38 @@ export default function HelpSupport() {
     }, 3000);
   };
 
+  // Handle navigation
+  const handleTabChange = (tabId) => {
+    if (tabId.startsWith('/dashboard')) {
+      router.push(tabId);
+    } else {
+      // Fallback for any legacy routes
+      switch (tabId) {
+        case 'home':
+          router.push('/dashboard');
+          break;
+        case 'crops':
+          router.push('/dashboard/mycrops');
+          break;
+        case 'scan':
+          router.push('/dashboard/plantDisease');
+          break;
+        case 'market':
+          router.push('/dashboard/market');
+          break;
+        case 'community':
+          router.push('/dashboard/community');
+          break;
+        case 'profile':
+          router.push('/dashboard/profile');
+          break;
+        default:
+          router.push('/dashboard');
+          break;
+      }
+    }
+  };
+
   // FAQ data
   const faqs = [
     {
@@ -156,6 +191,8 @@ export default function HelpSupport() {
 
   return (
     <div className="min-h-screen bg-white">
+      <Navbar activeTab="/dashboard/help" onTabChange={handleTabChange} />
+      
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-green-600 to-green-800 text-white py-8">
         <div className="container mx-auto px-4">

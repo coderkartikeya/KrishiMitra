@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../../middleware/clientAuth.js';
 
 // Import components
 import DashboardLayout from '../../components/dashboard/DashboardLayout';
@@ -15,7 +16,9 @@ import VoiceAssistant from '../../components/dashboard/VoiceAssistant';
 import { fetchDashboardData } from '../../services/dashboardService';
 
 // Main Dashboard Component
-export default function Dashboard() {
+function Dashboard() {
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('home');
   const [dashboardData, setDashboardData] = useState({
     weather: null,
@@ -24,8 +27,39 @@ export default function Dashboard() {
     isLoading: true,
     error: null
   });
-  
-  const router = useRouter();
+
+  // Check authentication
+  useEffect(() => {
+    // console.log('Dashboard: Auth state changed:', { isAuthenticated, isLoading, user: user?.id });
+    if (!isLoading && !isAuthenticated) {
+      // console.log('Dashboard: User not authenticated, redirecting to login');
+      router.push('/login');
+    }
+  }, [isAuthenticated, isLoading, router, user]);
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Fetch dashboard data on component mount
   useEffect(() => {
@@ -84,7 +118,11 @@ export default function Dashboard() {
   // Loading state UI
   if (dashboardData.isLoading) {
     return (
-      <DashboardLayout activeTab={activeTab}>
+      <DashboardLayout 
+        title="Dashboard" 
+        subtitle="Loading your farming data..."
+        icon={<span className="text-2xl">🌱</span>}
+      >
         <div className="max-w-7xl mx-auto">
           <div className="h-16 bg-gray-200 rounded-md animate-pulse mb-6"></div>
           
@@ -116,7 +154,11 @@ export default function Dashboard() {
   // Error state UI
   if (dashboardData.error) {
     return (
-      <DashboardLayout activeTab={activeTab}>
+      <DashboardLayout 
+        title="Dashboard" 
+        subtitle="Error loading data"
+        icon={<span className="text-2xl">⚠️</span>}
+      >
         <div className="max-w-7xl mx-auto text-center py-12">
           <div className="bg-red-50 border border-red-200 rounded-xl p-8 max-w-md mx-auto">
             <h2 className="text-2xl font-bold text-red-600 mb-4">Unable to Load Dashboard</h2>
@@ -135,7 +177,11 @@ export default function Dashboard() {
 
   // Main dashboard UI
   return (
-    <DashboardLayout activeTab={activeTab}>
+    <DashboardLayout 
+      title="Dashboard" 
+      subtitle="Welcome to Smart Farming Dashboard"
+      icon={<span className="text-2xl">🌱</span>}
+    >
       {/* Top Section with Date/Time and Voice Assistant */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-6">
         <DateTimeDisplay />
@@ -173,3 +219,6 @@ export default function Dashboard() {
     </DashboardLayout>
   );
 }
+
+// Export dashboard component
+export default Dashboard;

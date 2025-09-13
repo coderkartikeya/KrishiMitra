@@ -1,0 +1,7 @@
+# Node.js dependencies are managed by package.json
+# This file is kept for compatibility
+
+# If you need Python dependencies, add them here
+requests>=2.31.0
+python-dotenv>=1.0.0
+

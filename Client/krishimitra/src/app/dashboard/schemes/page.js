@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Navbar from '../../../components/NavBar';
 
 export default function GovernmentSchemes() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedState, setSelectedState] = useState('All States');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
@@ -177,8 +180,42 @@ export default function GovernmentSchemes() {
     setSupportQuery('');
   };
 
+  // Handle navigation
+  const handleTabChange = (tabId) => {
+    if (tabId.startsWith('/dashboard')) {
+      router.push(tabId);
+    } else {
+      // Fallback for any legacy routes
+      switch (tabId) {
+        case 'home':
+          router.push('/dashboard');
+          break;
+        case 'crops':
+          router.push('/dashboard/mycrops');
+          break;
+        case 'scan':
+          router.push('/dashboard/plantDisease');
+          break;
+        case 'market':
+          router.push('/dashboard/market');
+          break;
+        case 'community':
+          router.push('/dashboard/community');
+          break;
+        case 'profile':
+          router.push('/dashboard/profile');
+          break;
+        default:
+          router.push('/dashboard');
+          break;
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
+      <Navbar activeTab="/dashboard/schemes" onTabChange={handleTabChange} />
+      
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-green-600 to-green-800 text-white py-8">
         <div className="container mx-auto px-4">
