@@ -216,3 +216,4 @@ export const checkAuth = () => {
 export const getCurrentUser = () => {
   return clientAuth.getCurrentUser();
 };
+

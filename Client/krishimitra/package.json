@@ -17,9 +17,12 @@
     "lucide-react": "^0.540.0",
     "mongoose": "^8.18.1",
     "next": "^15.5.0",
+    "puppeteer": "^23.11.1",
+    "puppeteer-core": "^24.20.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "recharts": "^3.1.2",
+    
     "three": "^0.179.1",
     "zustand": "^5.0.8"
   },

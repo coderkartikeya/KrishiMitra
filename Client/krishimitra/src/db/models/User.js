@@ -255,3 +255,4 @@ userSchema.methods.comparePin = async function(candidatePin) {
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 export default User;
+

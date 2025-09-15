@@ -335,4 +335,39 @@ const PlantScanPage = () => {
                 <AlertCircle className="h-5 w-5 text-yellow-500 mr-2 flex-shrink-0 mt-0.5" />
                 <div>
                   <h4 className="font-medium text-gray-800 mb-2">महत्वपूर्ण नोट (Important Note)</h4>
-         
+                  <p className="text-gray-600 text-sm mb-2">यह एक प्रारंभिक निदान है। गंभीर मामलों में कृषि विशेषज्ञ से परामर्श करें।</p>
+                  <p className="text-gray-500 text-sm">(This is a preliminary diagnosis. For severe cases, consult an agricultural expert.)</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-blue-50 p-6 rounded-lg border border-blue-100">
+              <h4 className="font-medium text-gray-800 mb-3">अतिरिक्त सहायता (Additional Help)</h4>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li>• कृषि विशेषज्ञ से परामर्श करें (Consult agricultural expert)</li>
+                <li>• स्थानीय कृषि केंद्र पर जाएं (Visit local agriculture center)</li>
+                <li>• समुदाय में सहायता मांगें (Ask for help in community)</li>
+                <li>• सरकारी योजनाओं की जांच करें (Check government schemes)</li>
+              </ul>
+            </div>
+            
+            <div className="bg-green-50 p-6 rounded-lg border border-green-100">
+              <h4 className="font-medium text-gray-800 mb-3">अगले कदम (Next Steps)</h4>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li>• उपचार तुरंत शुरू करें (Start treatment immediately)</li>
+                <li>• पौधे की निगरानी करें (Monitor the plant)</li>
+                <li>• परिणामों को रिकॉर्ड करें (Record the results)</li>
+                <li>• अन्य पौधों की जांच करें (Check other plants)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PlantScanPage;

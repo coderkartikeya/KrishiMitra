@@ -1,18 +1,22 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Navbar from '../../../components/NavBar';
 
 export default function GovernmentSchemes() {
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedState, setSelectedState] = useState('All States');
-  const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [supportLocation, setSupportLocation] = useState('');
   const [supportQuery, setSupportQuery] = useState('');
+  const [schemesData, setSchemesData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedScheme, setSelectedScheme] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState('');
+  const [detailData, setDetailData] = useState(null);
 
   // List of Indian states for the dropdown
   const states = [
@@ -24,111 +28,57 @@ export default function GovernmentSchemes() {
     'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
   ];
 
-  // Categories of schemes
-  const categories = [
-    'All Categories', 'Financial Support', 'Crop Insurance', 'Irrigation', 
-    'Marketing Support', 'Pension', 'Credit & Loans', 'Infrastructure'
-  ];
+  // Categories removed from UI
 
-  // Government schemes data
-  const schemes = [
-    {
-      id: 1,
-      name: 'PM-KISAN (Pradhan Mantri Kisan Samman Nidhi)',
-      category: 'Financial Support',
-      description: 'Income support of ₹6,000 per year in three equal installments to all land holding farmer families.',
-      eligibility: 'All landholding farmers with cultivable land, subject to certain exclusions.',
-      benefits: '₹6,000 per year transferred directly to farmers\' bank accounts in three installments of ₹2,000 each.',
-      applicationProcess: 'Apply through the local revenue officer (Patwari/Lekhpal) or Common Service Centers or PM-KISAN portal.',
-      website: 'https://pmkisan.gov.in/',
-      states: 'All States',
-      image: '/images/pm-kisan.jpg'
-    },
-    {
-      id: 2,
-      name: 'PMFBY (Pradhan Mantri Fasal Bima Yojana)',
-      category: 'Crop Insurance',
-      description: 'Comprehensive crop insurance scheme to protect farmers from crop losses due to natural calamities.',
-      eligibility: 'All farmers including sharecroppers and tenant farmers growing notified crops.',
-      benefits: 'Insurance coverage and financial support to farmers in case of crop failure due to natural calamities, pests & diseases.',
-      applicationProcess: 'Apply through nearest agriculture office, banks, insurance companies or Common Service Centers.',
-      website: 'https://pmfby.gov.in/',
-      states: 'All States',
-      image: '/images/pmfby.jpg'
-    },
-    {
-      id: 3,
-      name: 'PM-KMY (Pradhan Mantri Kisan Maandhan Yojana)',
-      category: 'Pension',
-      description: 'Pension scheme for small and marginal farmers providing financial security in their old age.',
-      eligibility: 'Small and marginal farmers between 18-40 years of age with cultivable land up to 2 hectares.',
-      benefits: 'Monthly pension of ₹3,000 after attaining the age of 60 years.',
-      applicationProcess: 'Apply through Common Service Centers or PM-KMY portal.',
-      website: 'https://pmkmy.gov.in/',
-      states: 'All States',
-      image: '/images/pm-kmy.jpg'
-    },
-    {
-      id: 4,
-      name: 'Agriculture Infrastructure Fund (AIF)',
-      category: 'Infrastructure',
-      description: 'Financing facility for investment in agriculture infrastructure projects.',
-      eligibility: 'Farmers, FPOs, PACS, Marketing Cooperative Societies, SHGs, Joint Liability Groups, Multipurpose Cooperative Societies, Agri-entrepreneurs, Start-ups, and Central/State agency or Local Body sponsored Public-Private Partnership Projects.',
-      benefits: 'Interest subvention and credit guarantee support for loans up to ₹2 crore.',
-      applicationProcess: 'Apply through participating lending institutions or AIF portal.',
-      website: 'https://agriinfra.dac.gov.in/',
-      states: 'All States',
-      image: '/images/aif.jpg'
-    },
-    {
-      id: 5,
-      name: 'Modified Interest Subvention Scheme (MISS)',
-      category: 'Credit & Loans',
-      description: 'Provides short-term crop loans to farmers at subsidized interest rates.',
-      eligibility: 'All farmers availing short-term crop loans up to ₹3 lakh.',
-      benefits: 'Interest subvention of 2% per annum and additional 3% for prompt repayment, effectively reducing interest rate to 4% per annum.',
-      applicationProcess: 'Apply through scheduled commercial banks, RRBs, small finance banks, and cooperative banks.',
-      website: 'https://agricoop.gov.in/',
-      states: 'All States',
-      image: '/images/miss.jpg'
-    },
-    {
-      id: 6,
-      name: 'National Mission for Sustainable Agriculture (NMSA)',
-      category: 'Irrigation',
-      description: 'Promotes sustainable agriculture through climate change adaptation measures.',
-      eligibility: 'All farmers, with special focus on rainfed areas.',
-      benefits: 'Support for soil health management, water use efficiency, pest management, and climate change adaptation.',
-      applicationProcess: 'Apply through state agriculture department or district agriculture office.',
-      website: 'https://nmsa.dac.gov.in/',
-      states: 'All States',
-      image: '/images/nmsa.jpg'
-    },
-    {
-      id: 7,
-      name: 'e-NAM (National Agriculture Market)',
-      category: 'Marketing Support',
-      description: 'Online trading platform for agricultural commodities to ensure better price discovery.',
-      eligibility: 'All farmers can sell their produce through e-NAM enabled APMC mandis.',
-      benefits: 'Better price discovery, reduced transaction costs, and access to a nationwide market.',
-      applicationProcess: 'Register at nearest e-NAM enabled APMC mandi with required documents.',
-      website: 'https://enam.gov.in/',
-      states: 'All States',
-      image: '/images/enam.jpg'
-    },
-    {
-      id: 8,
-      name: 'Paramparagat Krishi Vikas Yojana (PKVY)',
-      category: 'Financial Support',
-      description: 'Promotes organic farming through cluster approach and Participatory Guarantee System (PGS) certification.',
-      eligibility: 'All farmers willing to adopt organic farming practices.',
-      benefits: 'Financial assistance of ₹50,000 per hectare for a three-year period for cluster formation, training, certification, and marketing.',
-      applicationProcess: 'Apply through state agriculture department or district agriculture office.',
-      website: 'https://pgsindia-ncof.gov.in/',
-      states: 'All States',
-      image: '/images/pkvy.jpg'
+  // Fetch scraped schemes list
+  useEffect(() => {
+    let isMounted = true;
+    async function load() {
+      setLoading(true);
+      setError('');
+      try {
+        const resp = await fetch('/api/schemes', { cache: 'no-store' });
+        
+        if (!resp.ok) throw new Error('Failed to load schemes');
+        const data = await resp.json();
+        console.log(data)
+        if (isMounted) setSchemesData(Array.isArray(data.items) ? data.items : []);
+      } catch (e) {
+        if (isMounted) setError('Could not load schemes. Please try again.');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     }
-  ];
+    load();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Scheme modal handlers
+  const openScheme = async (item) => {
+    setSelectedScheme(item);
+    setDetailLoading(true);
+    setDetailError('');
+    setDetailData(null);
+    try {
+      const url=`https://schemes.vikaspedia.in/viewcontent/schemesall/schemes-for-farmers/`+item.title.toLowerCase().split(' ').join('-');
+
+      const resp = await fetch(`/api/schemes/detail?url=${url}`, { cache: 'no-store' });
+      if (!resp.ok) throw new Error('Failed to load details');
+      const data = await resp.json();
+      // console.log(data)
+      setDetailData(data);
+    } catch (e) {
+      setDetailError('Could not load details. Please open the official page.');
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const closeScheme = () => {
+    setSelectedScheme(null);
+    setDetailData(null);
+    setDetailError('');
+  };
 
   // Agricultural committees data
   const agriculturalCommittees = [
@@ -160,15 +110,7 @@ export default function GovernmentSchemes() {
     }
   ];
 
-  // Filter schemes based on search term, state, and category
-  const filteredSchemes = schemes.filter(scheme => {
-    const matchesSearch = scheme.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          scheme.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesState = selectedState === 'All States' || scheme.states === selectedState || scheme.states === 'All States';
-    const matchesCategory = selectedCategory === 'All Categories' || scheme.category === selectedCategory;
-    
-    return matchesSearch && matchesState && matchesCategory;
-  });
+  // Search removed; show all scraped items
 
   // Handle support form submission
   const handleSupportSubmit = (e) => {
@@ -217,50 +159,16 @@ export default function GovernmentSchemes() {
       <Navbar activeTab="/dashboard/schemes" onTabChange={handleTabChange} />
       
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-green-600 to-green-800 text-white py-8">
+      <div className="bg-gradient-to-r from-green-600 to-green-800 text-white py-8 md:ml-80 mt-16 md:mt-0">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl font-bold mb-2">Government Schemes for Farmers</h1>
-          <p className="text-lg mb-6">Discover various government initiatives to support Indian farmers</p>
-          
-          {/* Search and Filter Section */}
-          <div className="bg-white p-4 rounded-lg shadow-md flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <input
-                type="text"
-                placeholder="Search schemes..."
-                className="w-full p-2 border border-gray-300 rounded text-gray-800"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="md:w-1/4">
-              <select 
-                className="w-full p-2 border border-gray-300 rounded text-gray-800"
-                value={selectedState}
-                onChange={(e) => setSelectedState(e.target.value)}
-              >
-                {states.map(state => (
-                  <option key={state} value={state}>{state}</option>
-                ))}
-              </select>
-            </div>
-            <div className="md:w-1/4">
-              <select 
-                className="w-full p-2 border border-gray-300 rounded text-gray-800"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                {categories.map(category => (
-                  <option key={category} value={category}>{category}</option>
-                ))}
-              </select>
-            </div>
-          </div>
+          <p className="text-lg mb-2">Discover official schemes and details in one place.</p>
+          <p className="opacity-90">Click any card to view a quick summary and open the official page.</p>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 md:ml-80">
         {/* Support Assistant Button */}
         <div className="mb-8 text-center">
           <button 
@@ -271,68 +179,54 @@ export default function GovernmentSchemes() {
           </button>
         </div>
 
-        {/* Schemes Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredSchemes.length > 0 ? (
-            filteredSchemes.map(scheme => (
-              <div key={scheme.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-xl transition duration-300">
-                <div className="h-48 bg-gray-200 relative">
-                  {/* In a real application, replace with actual images */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-green-100">
-                    <div className="text-4xl text-green-600">
-                      {scheme.category === 'Financial Support' && '₹'}
-                      {scheme.category === 'Crop Insurance' && '🛡️'}
-                      {scheme.category === 'Irrigation' && '💧'}
-                      {scheme.category === 'Marketing Support' && '🏪'}
-                      {scheme.category === 'Pension' && '👴'}
-                      {scheme.category === 'Credit & Loans' && '💳'}
-                      {scheme.category === 'Infrastructure' && '🏗️'}
+        {/* Schemes Grid (scraped) */}
+        {error && (
+          <div className="text-center text-red-600 mb-6">{error}</div>
+        )}
+        {loading ? (
+          <div className="text-center text-gray-600">Loading schemes...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {schemesData.length > 0 ? (
+              schemesData.map((item, idx) => (
+                <div
+                  key={item.url + idx}
+                  className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-lg transition duration-300 cursor-pointer group"
+                  onClick={() => openScheme(item)}
+                >
+                  <div className="p-5">
+                    <div className="inline-block px-3 py-1 mb-2 text-xs font-semibold text-green-800 bg-green-100 rounded-full">
+                      Scheme
+                    </div>
+                    <h3 className="text-lg font-bold mb-2 text-gray-800 group-hover:text-green-700">{item.title}</h3>
+                    <p className="text-sm text-gray-600 mb-3">Tap to view details and open the official page.</p>
+                    <div className="flex items-center gap-3">
+                      <span className="text-green-600 text-sm">View summary</span>
+                      <span className="text-gray-300">|</span>
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:text-blue-800"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Open official page →
+                      </a>
                     </div>
                   </div>
                 </div>
-                <div className="p-4">
-                  <div className="inline-block px-3 py-1 mb-2 text-xs font-semibold text-green-800 bg-green-100 rounded-full">
-                    {scheme.category}
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 text-gray-800">{scheme.name}</h3>
-                  <p className="text-gray-600 mb-4">{scheme.description}</p>
-                  
-                  <div className="mb-4">
-                    <h4 className="font-semibold text-gray-800">Eligibility:</h4>
-                    <p className="text-gray-600">{scheme.eligibility}</p>
-                  </div>
-                  
-                  <div className="mb-4">
-                    <h4 className="font-semibold text-gray-800">Benefits:</h4>
-                    <p className="text-gray-600">{scheme.benefits}</p>
-                  </div>
-                  
-                  <div className="mb-4">
-                    <h4 className="font-semibold text-gray-800">How to Apply:</h4>
-                    <p className="text-gray-600">{scheme.applicationProcess}</p>
-                  </div>
-                  
-                  <a 
-                    href={scheme.website} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-block mt-2 text-green-600 hover:text-green-800 font-medium"
-                  >
-                    Visit Official Website →
-                  </a>
-                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-10">
+                <p className="text-xl text-gray-600">No schemes found. Try a different search.</p>
               </div>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-10">
-              <p className="text-xl text-gray-600">No schemes found matching your criteria. Please try a different search.</p>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Agricultural Committees Section */}
-      <div className="bg-gray-50 py-10">
+      <div className="bg-gray-50 py-10 md:ml-80">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Agricultural Committees & Support</h2>
           
@@ -413,6 +307,65 @@ export default function GovernmentSchemes() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {selectedScheme && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden">
+            <div className="px-6 py-4 border-b bg-gradient-to-r from-green-50 to-emerald-50">
+              <h3 className="text-xl font-bold text-gray-800">{selectedScheme.title}</h3>
+            </div>
+            <div className="p-6 max-h-[70vh] overflow-y-auto">
+              {detailLoading && (
+                <p className="text-gray-600">Fetching details...</p>
+              )}
+              {detailError && (
+                <p className="text-red-600 mb-3">{detailError}</p>
+              )}
+              {detailData && (
+                <div>
+                  {detailData.sections?.eligibility && (
+                    <div className="mb-4">
+                      <h4 className="font-semibold text-gray-800 mb-1">Eligibility</h4>
+                      <p className="text-gray-700 whitespace-pre-line">{detailData.sections.eligibility}</p>
+                    </div>
+                  )}
+                  {detailData.sections?.benefits && (
+                    <div className="mb-4">
+                      <h4 className="font-semibold text-gray-800 mb-1">Benefits</h4>
+                      <p className="text-gray-700 whitespace-pre-line">{detailData.sections.benefits}</p>
+                    </div>
+                  )}
+                  {detailData.sections?.how_to_apply && (
+                    <div className="mb-4">
+                      <h4 className="font-semibold text-gray-800 mb-1">How to apply</h4>
+                      <p className="text-gray-700 whitespace-pre-line">{detailData.sections.how_to_apply}</p>
+                    </div>
+                  )}
+                  {!detailData.sections || Object.keys(detailData.sections).length === 0 ? (
+                    <p className="text-gray-700 whitespace-pre-line">{detailData.content || 'Details not available.'}</p>
+                  ) : null}
+                </div>
+              )}
+            </div>
+            <div className="px-6 py-4 border-t bg-gray-50 flex items-center justify-between">
+              <a
+                href={selectedScheme.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg"
+              >
+                Open official page
+              </a>
+              <button
+                onClick={closeScheme}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

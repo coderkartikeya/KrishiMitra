@@ -33,7 +33,6 @@ const Navigation = ({ activeTab, onTabChange }) => {
       title: 'स्मार्ट टूल्स',
       englishTitle: 'Smart Tools',
       items: [
-        { id: '/dashboard/plantDisease', label: 'रोग पहचान', englishLabel: 'Disease Detection', icon: <Camera className="w-6 h-6" />, color: 'bg-red-100 text-red-600' },
         { id: '/dashboard/plantscan', label: 'पौधा स्कैन', englishLabel: 'Plant Scan', icon: <Camera className="w-6 h-6" />, color: 'bg-purple-100 text-purple-600' },
         { id: '/dashboard/soilAnalysis', label: 'मिट्टी विश्लेषण', englishLabel: 'Soil Analysis', icon: <Microscope className="w-6 h-6" />, color: 'bg-orange-100 text-orange-600' }
       ]
@@ -115,7 +114,7 @@ const Navigation = ({ activeTab, onTabChange }) => {
 
       {/* Mobile Full Screen Menu Overlay */}
       {showMobileMenu && (
-        <div className="fixed inset-0 bg-white z-50 md:hidden">
+        <div className="fixed inset-0 bg-white z-50 md:hidden overflow-y-auto">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50">
             <div>
