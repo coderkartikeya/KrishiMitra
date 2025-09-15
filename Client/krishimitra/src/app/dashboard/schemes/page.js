@@ -213,15 +213,15 @@ export default function GovernmentSchemes() {
                         Open official page →
                       </a>
                     </div>
-                  </div>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-10">
-                <p className="text-xl text-gray-600">No schemes found. Try a different search.</p>
               </div>
-            )}
-          </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-10">
+                <p className="text-xl text-gray-600">No schemes found. Try a different search.</p>
+            </div>
+          )}
+        </div>
         )}
       </div>
 
