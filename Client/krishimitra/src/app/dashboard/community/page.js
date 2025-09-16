@@ -6,11 +6,12 @@ import { MessageSquare, Users, Heart, Share2, Send, Search, Filter, Sparkles, Pl
 import DashboardLayout from '../../../components/dashboard/DashboardLayout';
 import { useUserStore } from '../../../store/userStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../../../middleware/clientAuth.js';
 
 const CommunityPage = () => {
   const router = useRouter();
-  const userProfile = useUserStore((s) => s.userProfile);
-  // console.log(userProfile)
+  const {user} = useAuth();
+  // console.log(user)
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -65,8 +66,8 @@ const CommunityPage = () => {
     setCreating(true);
     try {
       const payload = {
-        authorId: userProfile.id || '000000000000000000000000',
-        authorName: userProfile.name || 'Anonymous Farmer',
+        authorId: user?.id || '000000000000000000000000',
+        authorName: user?.name || 'Anonymous Farmer',
         title: newTitle.trim(),
         content: newContent.trim(),
         tags: newTags.split(',').map(t => t.trim()).filter(Boolean)
@@ -89,10 +90,10 @@ const CommunityPage = () => {
   async function toggleLike(postId, isLiked) {
     try {
       const endpoint = isLiked ? 'unlike' : 'like';
-      const res = await fetch(`/api/community/posts/${postId}/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: userProfile.id || '000000000000000000000000' }) });
+      const res = await fetch(`/api/community/posts/${postId}/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: user?.id || '000000000000000000000000' }) });
       if (!res.ok) throw new Error('Failed');
       const data = await res.json();
-      setPosts(prev => prev.map(p => p._id === postId ? { ...p, likes: isLiked ? (p.likes || []).filter(id => id !== userProfile.id) : [ ...(p.likes||[]), userProfile.id ] } : p));
+      setPosts(prev => prev.map(p => p._id === postId ? { ...p, likes: isLiked ? (p.likes || []).filter(id => id !== user?.id) : [ ...(p.likes||[]), user?.id ] } : p));
     } catch (e) {
       // ignore
     }
@@ -114,7 +115,7 @@ const CommunityPage = () => {
     const text = (commentInputs[postId] || '').trim();
     if (!text) return;
     try {
-      const payload = { authorId: userProfile.id || '000000000000000000000000', authorName: userProfile.name || 'Anonymous Farmer', content: text };
+      const payload = { authorId: user?.id || '000000000000000000000000', authorName: user?.name || 'Anonymous Farmer', content: text };
       const res = await fetch(`/api/community/posts/${postId}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error('Failed');
       const created = await res.json();
@@ -413,7 +414,7 @@ const CommunityPage = () => {
         className="space-y-6"
       >
         {filteredPosts.map((post, index) => {
-          const isLiked = (post.likes || []).includes(userProfile.id);
+          const isLiked = (post.likes || []).includes(user?.id);
           return (
             <motion.div 
               key={post._id} 
@@ -564,7 +565,7 @@ const CommunityPage = () => {
                       </div>
                       <div className="flex gap-3">
                         <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
-                          {(userProfile.name || 'A').charAt(0)}
+                          {(user?.name || 'A').charAt(0)}
                         </div>
                         <div className="flex-1 space-y-3">
                           <div className="relative group">

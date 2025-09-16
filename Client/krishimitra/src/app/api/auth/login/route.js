@@ -95,7 +95,7 @@ export async function POST(request) {
 
     // Generate JWT tokens
     const { accessToken, refreshToken } = await  generateTokenPair(user);
-
+    console.log(user);
     // Create response
     const response = NextResponse.json({
       success: true,

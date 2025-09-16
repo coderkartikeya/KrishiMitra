@@ -18,6 +18,7 @@ import { fetchDashboardData } from '../../services/dashboardService';
 // Main Dashboard Component
 function Dashboard() {
   const { isAuthenticated, isLoading, user } = useAuth();
+  // console.log(user)
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('home');
   const [dashboardData, setDashboardData] = useState({

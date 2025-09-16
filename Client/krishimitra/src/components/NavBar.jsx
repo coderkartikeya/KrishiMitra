@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useAuthStore } from '../store/authStore';
 import { 
   Home, Sprout, Camera, TrendingUp, Users, FileText, DollarSign, Bot, BookOpen, 
   Droplets, Microscope, MessageSquare, Menu, X, ChevronRight, Plus
@@ -9,6 +10,17 @@ import {
 const Navigation = ({ activeTab, onTabChange }) => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState(null);
+  const logout = useAuthStore((s) => s.logout);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (_) {}
+    logout();
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
+  };
 
   // Primary navigation items (most important for bottom nav)
   const primaryNavItems = [
@@ -188,6 +200,9 @@ const Navigation = ({ activeTab, onTabChange }) => {
                   <span className="text-xs font-medium text-gray-800">समुदाय</span>
                 </button>
               </div>
+              <button onClick={handleLogout} className="w-full mt-4 py-3 text-center bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-md hover:shadow-lg">
+                लॉग आउट (Logout)
+              </button>
             </div>
           </div>
         </div>
@@ -251,6 +266,9 @@ const Navigation = ({ activeTab, onTabChange }) => {
             💬 तुरंत मदद चाहिए?
           </button>
           <p className="text-center text-xs text-gray-600 mt-2">24/7 किसान सहायता उपलब्ध</p>
+          <button onClick={handleLogout} className="w-full mt-3 py-3 text-center bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-md hover:shadow-lg">
+            लॉग आउट (Logout)
+          </button>
         </div>
       </aside>
 

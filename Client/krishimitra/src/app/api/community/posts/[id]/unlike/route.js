@@ -1,4 +1,4 @@
-import connectDB from '../../../../../../db/connection';
+import connectDB from '../../../../../../db/connection.js';
 import Post from '../../../../../../db/models/Post';
 import mongoose from 'mongoose';
 

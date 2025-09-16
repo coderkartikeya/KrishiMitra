@@ -1,4 +1,5 @@
-// utils/cookies.js
+// utils/cookies.js - SERVER-SIDE ONLY
+// This file uses next/headers and should only be imported in server components or API routes
 import { cookies } from "next/headers";
 
 const COOKIE_OPTIONS = {
