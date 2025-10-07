@@ -1,55 +1,279 @@
-'use client';
-
-import React, { useState } from 'react';
+'use client'
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, Upload, Leaf, AlertCircle, Check } from 'lucide-react';
+import { Upload, AlertCircle, Camera, X, RotateCcw, Leaf, Shield, BookOpen, CheckCircle } from 'lucide-react';
 import Navbar from '../../../components/NavBar';
 
 const PlantScanPage = () => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('camera');
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanResult, setScanResult] = useState(null);
-  const [uploadedImage, setUploadedImage] = useState(null);
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const [stream, setStream] = useState(null);
+  const [activeTab, setActiveTab] = useState('detection');
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+
+  const plantTypes = [
+    { value: "Tomato", label: "Tomato", icon: "🍅" },
+    { value: "Potato", label: "Potato", icon: "🥔" },
+    { value: "Pepper", label: "Pepper", icon: "🌶️" },
+    { value: "Lettuce", label: "Lettuce", icon: "🥬" },
+    { value: "Wheat", label: "Wheat", icon: "🌾" },
+    { value: "Rice", label: "Rice", icon: "🌾" },
+    { value: "Corn", label: "Corn", icon: "🌽" },
+    { value: "Soybean", label: "Soybean", icon: "🫘" }
+  ];
+  const [selectedPlant, setSelectedPlant] = useState("Tomato");
   
-  // Mock function to simulate plant scanning
-  const handleScan = () => {
-    setIsScanning(true);
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      setIsScanning(false);
-      setScanResult({
-        disease: 'पत्ती धब्बा रोग (Leaf Spot Disease)',
-        confidence: 92,
-        description: 'यह एक आम फंगल रोग है जो पत्तियों पर भूरे या काले धब्बे बनाता है।',
-        englishDescription: 'This is a common fungal disease that creates brown or black spots on leaves.',
-        treatment: [
-          'नीम तेल स्प्रे का उपयोग करें (Use neem oil spray)',
-          'प्रभावित पत्तियों को हटा दें (Remove affected leaves)',
-          'पौधों के बीच हवा के प्रवाह में सुधार करें (Improve air circulation between plants)'
-        ],
-        severity: 'मध्यम (Moderate)'
-      });
-    }, 2000);
+  const plantDiseaseData = {
+    "Tomato": [
+      {
+        class: "Tomato_Target_Spot",
+        remedies: [
+          "Remove infected leaves",
+          "Apply copper-based fungicide",
+          "Avoid overhead watering"
+        ]
+      },
+      {
+        class: "Tomato_Tomato_mosaic_virus",
+        remedies: [
+          "Remove and destroy infected plants",
+          "Disinfect tools regularly",
+          "Avoid smoking near plants"
+        ]
+      },
+      {
+        class: "Tomato_Tomato_YellowLeaf_Curl_Virus",
+        remedies: [
+          "Control whitefly population",
+          "Use resistant varieties",
+          "Remove infected plants"
+        ]
+      },
+      {
+        class: "Tomato_Bacterial_spot",
+        remedies: [
+          "Avoid overhead irrigation",
+          "Use copper-based sprays",
+          "Rotate crops yearly"
+        ]
+      },
+      {
+        class: "Tomato_Early_blight",
+        remedies: [
+          "Apply fungicide",
+          "Avoid wetting the foliage",
+          "Remove infected debris"
+        ]
+      },
+      {
+        class: "Tomato_healthy",
+        remedies: [
+          "Continue regular monitoring",
+          "Maintain current care routines"
+        ]
+      },
+      {
+        class: "Tomato_Late_blight",
+        remedies: [
+          "Use resistant varieties",
+          "Remove infected plants immediately",
+          "Apply fungicides preventively"
+        ]
+      },
+      {
+        class: "Tomato_Leaf_Mold",
+        remedies: [
+          "Improve air circulation",
+          "Avoid overhead watering",
+          "Apply sulfur-based fungicide"
+        ]
+      },
+      {
+        class: "Tomato_Septoria_leaf_spot",
+        remedies: [
+          "Remove infected leaves",
+          "Water at soil level",
+          "Apply fungicide with chlorothalonil"
+        ]
+      },
+      {
+        class: "Tomato_Spider_mites_Two_spotted_spider_mite",
+        remedies: [
+          "Spray neem oil or insecticidal soap",
+          "Keep humidity high",
+          "Use predatory mites"
+        ]
+      }
+    ],
+    "Potato": [
+      {
+        class: "Potato_Early_blight",
+        remedies: [
+          "Apply appropriate fungicide",
+          "Practice crop rotation",
+          "Remove affected leaves"
+        ]
+      },
+      {
+        class: "Potato_healthy",
+        remedies: [
+          "Keep monitoring your crop",
+          "Maintain soil and moisture levels"
+        ]
+      },
+      {
+        class: "Potato_Late_blight",
+        remedies: [
+          "Destroy infected plants",
+          "Use certified disease-free seeds",
+          "Apply copper fungicide early"
+        ]
+      }
+    ]
   };
-  
-  // Handle file upload
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setUploadedImage(e.target.result);
-      };
-      reader.readAsDataURL(file);
+
+  // Camera functionality
+  const startCamera = async () => {
+    try {
+      setError(null);
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment', // Use back camera on mobile
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      });
+      setStream(mediaStream);
+      setShowCamera(true);
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+    } catch (err) {
+      console.error('Error accessing camera:', err);
+      setError('Unable to access camera. Please check permissions or try uploading a file instead.');
     }
   };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setShowCamera(false);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
+      const context = canvas.getContext('2d');
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0);
+      
+      canvas.toBlob((blob) => {
+        const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+        setFile(file);
+        
+        const reader = new FileReader();
+        reader.onload = () => {
+          setPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+        
+        stopCamera();
+      }, 'image/jpeg', 0.8);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    setError(null);
+    setResult(null);
+    
+    if (selectedFile) {
+      if (!selectedFile.type.includes('image')) {
+        setError("Please upload an image file");
+        setFile(null);
+        setPreview(null);
+        return;
+      }
+      
+      setFile(selectedFile);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreview(reader.result);
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
   
-  // Reset scan
-  const resetScan = () => {
-    setScanResult(null);
-    setUploadedImage(null);
+    if (!file) {
+      setError("Please take a photo with camera or upload an image first");
+      return;
+    }
+  
+    setIsLoading(true);
+    setError(null);
+    setResult(null);
+  
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("plant", selectedPlant);
+  
+      const response = await fetch("http://127.0.0.1:8000/predict", {
+        method: "POST",
+        body: formData,
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.detail || "Something went wrong");
+      }
+      // console.log(selectedPlant);
+      
+      const diseaseData = selectedPlant === 'Potato' ? plantDiseaseData.Potato[data.predicted_class] : plantDiseaseData.Tomato[data.predicted_class];
+      // console.log(diseaseData);
+      
+      setResult({
+        plantType: selectedPlant,
+        disease: diseaseData.name || diseaseData.class,
+        diseaseClass: diseaseData.class,
+        commonlyAffects: diseaseData.commonlyAffects,
+        symptoms: diseaseData.symptoms,
+        causes: diseaseData.causes,
+        confidence: data.confidence,
+        recommendations: diseaseData.remedies,
+        treatment: diseaseData.treatment,
+        isHealthy: diseaseData.class.includes('healthy')
+      });
+    } catch (err) {
+      console.error(err);
+      setError("Error in disease detection: " + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFile(null);
+    setPreview(null);
+    setResult(null);
+    setError(null);
+    stopCamera();
   };
 
   const handleTabChange = (tabId) => {
@@ -84,285 +308,543 @@ const PlantScanPage = () => {
     }
   };
 
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [stream]);
+
   return (
     <div className='min-h-screen bg-gradient-to-br from-green-50 to-blue-50'>
       <Navbar activeTab="/dashboard/plantscan" onTabChange={handleTabChange}/>
       
       {/* Desktop Layout with proper spacing for navbar */}
       <div className="md:ml-80 pt-16 md:pt-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Page Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-white rounded-full shadow-sm">
-                <Leaf className="w-6 h-6 text-green-600" />
-              </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-800">पौधा स्कैन (Plant Scan)</h1>
-            </div>
-            <p className="text-gray-600 mt-1 max-w-3xl">अपने पौधों की बीमारियों का पता लगाएं और उपचार पाएं (Detect plant diseases and get treatments)</p>
-          </div>
-          
-          {/* Page Content */}
-          <div className="bg-white rounded-xl shadow-sm p-4 md:p-6 border border-gray-100">
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-6">
-        <button
-          onClick={() => setActiveTab('camera')}
-          className={`py-3 px-4 font-medium text-sm border-b-2 ${activeTab === 'camera' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-        >
-          <Camera className="inline-block w-4 h-4 mr-2" />
-          कैमरा (Camera)
-        </button>
-        <button
-          onClick={() => setActiveTab('upload')}
-          className={`py-3 px-4 font-medium text-sm border-b-2 ${activeTab === 'upload' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-        >
-          <Upload className="inline-block w-4 h-4 mr-2" />
-          फोटो अपलोड (Upload Photo)
-        </button>
-      </div>
-      
-      {/* Camera Tab */}
-      {activeTab === 'camera' && !scanResult && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Camera Section */}
-          <div className="text-center">
-            <div className="bg-gray-100 rounded-lg p-8 mb-6 relative">
-              <div className="aspect-w-4 aspect-h-3 bg-gray-200 rounded-lg flex items-center justify-center h-64">
-                {isScanning ? (
-                  <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mb-2"></div>
-                    <p className="text-gray-600">स्कैन हो रहा है... (Scanning...)</p>
+        <div className="min-h-screen bg-gray-50">
+          {/* Header */}
+          <div className="bg-white shadow-sm border-b">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center py-6">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">Plant Disease Detection</h1>
+                  <p className="text-gray-600 mt-1">Upload plant images for AI-powered disease analysis</p>
                   </div>
-                ) : (
-                  <div className="text-center">
-                    <Camera className="h-16 w-16 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-500">कैमरा एक्सेस की अनुमति दें (Allow camera access)</p>
-                  </div>
-                )}
               </div>
               
-              <div className="mt-6">
+              {/* Navigation Tabs */}
+              <div className="flex space-x-8 border-b">
                 <button
-                  onClick={handleScan}
-                  disabled={isScanning}
-                  className={`w-full py-3 px-4 rounded-lg font-medium ${isScanning ? 'bg-gray-300 text-gray-500' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                  onClick={() => setActiveTab('detection')}
+                  className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'detection'
+                      ? 'border-green-500 text-green-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
                 >
-                  {isScanning ? 'स्कैन हो रहा है... (Scanning...)' : 'पौधे को स्कैन करें (Scan Plant)'}
+                  <Camera className="w-5 h-5" />
+                  Disease Detection
                 </button>
+                <button
+                  onClick={() => setActiveTab('library')}
+                  className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'library'
+                      ? 'border-green-500 text-green-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <BookOpen className="w-5 h-5" />
+                  Disease Library
+                </button>
+            <button
+              onClick={() => setActiveTab('practices')}
+              className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'practices'
+                  ? 'border-green-500 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Shield className="w-5 h-5" />
+              Safe Practices
+            </button>
               </div>
             </div>
           </div>
           
-          {/* Instructions Section */}
-          <div className="space-y-6">
-            <div className="bg-blue-50 rounded-lg p-6 border border-blue-100">
-              <h3 className="font-medium text-gray-800 mb-4 text-lg">स्कैन कैसे करें (How to scan)</h3>
-              <ul className="text-gray-600 space-y-3">
-                <li className="flex items-start">
-                  <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2 py-1 rounded-full mr-3 mt-0.5">1</span>
-                  <span>पौधे की प्रभावित पत्ती को स्पष्ट रूप से दिखाएं (Clearly show the affected leaf)</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2 py-1 rounded-full mr-3 mt-0.5">2</span>
-                  <span>अच्छी रोशनी में स्कैन करें (Scan in good lighting)</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2 py-1 rounded-full mr-3 mt-0.5">3</span>
-                  <span>कैमरे को स्थिर रखें (Keep the camera steady)</span>
-                </li>
-              </ul>
+          {/* Main Content */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {activeTab === 'detection' && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Side - Upload Section */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">Upload Plant Image</h2>
+                  <p className="text-gray-600 mb-6">Take a clear photo of the affected plant part (leaf, stem, fruit) and upload it for analysis.</p>
+                  
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Plant Selection */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Select Plant Type</label>
+                      <select 
+                        value={selectedPlant}
+                        onChange={(e) => setSelectedPlant(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      >
+                        {plantTypes.map((plant) => (
+                          <option key={plant.value} value={plant.value}>
+                            {plant.icon} {plant.label}
+                          </option>
+                        ))}
+                      </select>
             </div>
             
-            <div className="bg-green-50 rounded-lg p-6 border border-green-100">
-              <h3 className="font-medium text-gray-800 mb-4 text-lg">सुझाव (Tips)</h3>
-              <ul className="text-gray-600 space-y-2">
-                <li>• पत्ती के दोनों तरफ की तस्वीर लें (Take photos of both sides of the leaf)</li>
-                <li>• क्लोज़-अप में स्पष्ट तस्वीर लें (Take clear close-up photos)</li>
-                <li>• पृष्ठभूमि साफ रखें (Keep background clean)</li>
-              </ul>
+                    {/* Camera Interface */}
+                    {showCamera && (
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                        <div className="relative">
+                          <video
+                            ref={videoRef}
+                            autoPlay
+                            playsInline
+                            className="w-full h-64 object-cover rounded"
+                          />
+                          <canvas ref={canvasRef} className="hidden" />
+                          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                            <button
+                              type="button"
+                              onClick={capturePhoto}
+                              className="bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition-colors shadow-lg"
+                            >
+                              <Camera className="w-5 h-5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={stopCamera}
+                              className="bg-red-600 text-white px-4 py-2 rounded-full hover:bg-red-700 transition-colors shadow-lg"
+                            >
+                              <X className="w-5 h-5" />
+                            </button>
             </div>
           </div>
         </div>
       )}
       
-      {/* Upload Tab */}
-      {activeTab === 'upload' && !scanResult && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Upload Section */}
-          <div className="text-center">
-            <div className="bg-gray-100 rounded-lg p-8 mb-6">
-              {uploadedImage ? (
-                <div className="mb-4">
-                  <img 
-                    src={uploadedImage} 
-                    alt="Uploaded plant" 
-                    className="max-h-64 mx-auto rounded-lg shadow-md" 
-                  />
+                    {/* Image Input Options */}
+                    <div className="space-y-4">
+                      {/* Camera Option */}
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
+                        <div className="flex flex-col items-center">
+                          <Camera className="h-12 w-12 text-blue-500 mb-4" />
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">Take Photo with Camera</h3>
+                          <p className="text-gray-500 mb-4">Use your device camera to capture a clear photo of the plant</p>
+                          <button
+                            type="button"
+                            onClick={startCamera}
+                            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                          >
+                            <Camera className="w-5 h-5" />
+                            Open Camera
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Divider */}
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-gray-300" />
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                          <span className="px-2 bg-white text-gray-500">or</span>
                 </div>
-              ) : (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 mb-4">
-                  <Upload className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500 mb-2">फोटो अपलोड करें (Upload a photo)</p>
-                  <p className="text-gray-400 text-sm">JPG, PNG या HEIC फॉर्मेट (JPG, PNG or HEIC format)</p>
                 </div>
-              )}
               
-              <div className="flex flex-col gap-3">
-                <label className="w-full py-3 px-4 bg-white text-gray-700 rounded-lg border border-gray-300 cursor-pointer hover:bg-gray-50 font-medium text-center transition-colors">
-                  फोटो चुनें (Choose Photo)
+                      {/* Upload Option */}
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
                   <input 
                     type="file" 
+                          onChange={handleFileChange}
+                          className="hidden"
+                          id="leaf-image"
                     accept="image/*" 
-                    className="hidden" 
-                    onChange={handleFileUpload} 
-                  />
-                </label>
-                
-                {uploadedImage && (
-                  <button
-                    onClick={handleScan}
-                    disabled={isScanning}
-                    className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${isScanning ? 'bg-gray-300 text-gray-500' : 'bg-green-600 text-white hover:bg-green-700'}`}
-                  >
-                    {isScanning ? 'विश्लेषण हो रहा है... (Analyzing...)' : 'फोटो का विश्लेषण करें (Analyze Photo)'}
-                  </button>
-                )}
+                        />
+                        <label htmlFor="leaf-image" className="cursor-pointer">
+                          <div className="flex flex-col items-center">
+                            <Upload className="h-12 w-12 text-gray-400 mb-4" />
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">Upload from Device</h3>
+                            <p className="text-gray-500 mb-4">Choose an existing photo from your device</p>
+                            <div className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                              Choose File
               </div>
             </div>
+                        </label>
           </div>
-          
-          {/* Tips Section */}
-          <div className="space-y-6">
-            <div className="bg-blue-50 rounded-lg p-6 border border-blue-100">
-              <h3 className="font-medium text-gray-800 mb-4 text-lg">अच्छी फोटो के टिप्स (Tips for good photos)</h3>
-              <ul className="text-gray-600 space-y-3">
-                <li className="flex items-start">
-                  <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2 py-1 rounded-full mr-3 mt-0.5">1</span>
-                  <span>प्रभावित क्षेत्र को क्लोज़-अप में लें (Take close-ups of affected areas)</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2 py-1 rounded-full mr-3 mt-0.5">2</span>
-                  <span>प्राकृतिक प्रकाश का उपयोग करें (Use natural light)</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2 py-1 rounded-full mr-3 mt-0.5">3</span>
-                  <span>छाया से बचें (Avoid shadows)</span>
-                </li>
-              </ul>
             </div>
             
-            <div className="bg-green-50 rounded-lg p-6 border border-green-100">
-              <h3 className="font-medium text-gray-800 mb-4 text-lg">फोटो गुणवत्ता (Photo Quality)</h3>
-              <ul className="text-gray-600 space-y-2">
-                <li>• उच्च रिज़ॉल्यूशन वाली तस्वीरें लें (Take high-resolution photos)</li>
-                <li>• फोकस स्पष्ट रखें (Keep focus clear)</li>
-                <li>• पूरे पत्ते को दिखाएं (Show the entire leaf)</li>
-                <li>• कई कोणों से तस्वीरें लें (Take photos from multiple angles)</li>
-              </ul>
+                    {/* Image Preview */}
+                    {preview && (
+                      <div className="mt-4">
+                        <div className="relative">
+                          <img src={preview} alt="Leaf preview" className="max-h-64 mx-auto rounded-lg shadow-sm" />
+                          <div className="absolute top-2 right-2">
+                            <button
+                              type="button"
+                              onClick={resetForm}
+                              className="bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-600 hover:text-gray-800 p-2 rounded-full shadow-sm transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
             </div>
           </div>
+                        <p className="text-sm text-gray-600 text-center mt-2">
+                          {file?.name ? `Selected: ${file.name}` : 'Camera capture'}
+                        </p>
         </div>
       )}
       
-      {/* Scan Results */}
-      {scanResult && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Results */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-              <div className="bg-green-50 p-4 border-b border-gray-200">
-                <div className="flex items-center">
-                  <div className="bg-green-100 p-2 rounded-full mr-3">
-                    <Check className="h-6 w-6 text-green-600" />
+                    {error && (
+                      <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center">
+                        <AlertCircle className="h-5 w-5 mr-3 flex-shrink-0" />
+                        <span>{error}</span>
                   </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800">स्कैन पूरा हुआ (Scan Complete)</h3>
-                    <p className="text-sm text-gray-500">हमने आपके पौधे की समस्या का पता लगा लिया है (We've identified your plant's issue)</p>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={!file || isLoading}
+                      className={`w-full py-3 px-6 rounded-lg font-medium text-white transition-colors ${
+                        !file || isLoading 
+                          ? 'bg-gray-400 cursor-not-allowed' 
+                          : 'bg-green-600 hover:bg-green-700 shadow-sm'
+                      }`}
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Analyzing...
                   </div>
+                      ) : (
+                        file ? 'Analyze Plant Disease' : 'Take Photo or Upload Image First'
+                      )}
+                    </button>
+                  </form>
                 </div>
+
+                {/* Right Side - Results Section */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  {result ? (
+                    <div>
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-bold text-gray-900">Disease Detection Result</h3>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          result.isHealthy 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {result.isHealthy ? 'Healthy' : 'Detected'}
+                        </span>
+                      </div>
+
+                      <div className="space-y-6">
+                        {/* Disease Name */}
+                        <div>
+                          <h4 className={`text-2xl font-bold ${
+                            result.isHealthy ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {result.disease}
+                          </h4>
+                          <p className="text-gray-600 mt-1">Commonly affects: {result.commonlyAffects}</p>
               </div>
               
-              <div className="p-6">
-                <div className="mb-6">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{scanResult.disease}</h3>
-                  <div className="flex items-center mb-4">
-                    <div className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                      {scanResult.confidence}% विश्वास (confidence)
+                        {/* Confidence Level */}
+                        <div>
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm font-medium text-gray-700">Confidence Level</span>
+                            <span className="text-sm font-medium text-gray-900">{result.confidence}%</span>
                     </div>
-                    <div className="ml-3 bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                      {scanResult.severity}
+                          <div className="w-full bg-gray-200 rounded-full h-3">
+                            <div 
+                              className={`h-3 rounded-full transition-all duration-500 ${
+                                result.isHealthy ? 'bg-green-500' : 'bg-red-500'
+                              }`}
+                              style={{ width: `${result.confidence}%` }}
+                            ></div>
                     </div>
                   </div>
                   
-                  <p className="text-gray-600 mb-1">{scanResult.description}</p>
-                  <p className="text-gray-500 text-sm">{scanResult.englishDescription}</p>
+                        {/* Symptoms */}
+                        <div>
+                          <h5 className="font-semibold text-gray-900 mb-2">Symptoms</h5>
+                          <p className="text-gray-700 text-sm leading-relaxed">{result.symptoms}</p>
+                        </div>
+
+                        {/* Causes */}
+                        <div>
+                          <h5 className="font-semibold text-gray-900 mb-2">Causes</h5>
+                          <p className="text-gray-700 text-sm leading-relaxed">{result.causes}</p>
                 </div>
                 
-                <div className="mb-6">
-                  <h4 className="font-medium text-gray-800 mb-2">अनुशंसित उपचार (Recommended Treatment)</h4>
+                        {/* Prevention Methods */}
+                        <div>
+                          <h5 className="font-semibold text-gray-900 mb-3">Prevention Methods</h5>
                   <ul className="space-y-2">
-                    {scanResult.treatment.map((item, index) => (
-                      <li key={index} className="flex items-start">
-                        <span className="bg-green-100 p-1 rounded-full mr-2 mt-0.5">
-                          <Check className="h-3 w-3 text-green-600" />
-                        </span>
-                        <span className="text-gray-600">{item}</span>
+                            {result.recommendations.map((rec, index) => (
+                              <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
+                                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                                <span>{rec}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
                 
-                <div className="mt-6 flex gap-3">
-                  <button
-                    onClick={resetScan}
-                    className="flex-1 py-2.5 px-4 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-                  >
-                    नया स्कैन (New Scan)
-                  </button>
-                  <button className="flex-1 py-2.5 px-4 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
-                    विशेषज्ञ से पूछें (Ask Expert)
-                  </button>
+                        {/* Safe Treatment Options */}
+                        <div>
+                          <h5 className="font-semibold text-gray-900 mb-3">Safe Treatment Options</h5>
+                          <ul className="space-y-2">
+                            {result.treatments && result.treatments.map((treatment, index) => (
+                              <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
+                                <Leaf className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                                <span>{treatment}</span>
+                              </li>
+                            ))}
+                            {!result.treatments && (
+                              <li className="flex items-start gap-2 text-sm text-gray-700">
+                                <Leaf className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                                <span>No specific treatments available for this condition.</span>
+                              </li>
+                            )}
+                          </ul>
                 </div>
               </div>
             </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Camera className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Analysis Yet</h3>
+                      <p className="text-gray-500">Upload a plant image to get started with disease detection</p>
           </div>
-          
-          {/* Sidebar Info */}
-          <div className="space-y-6">
-            <div className="bg-yellow-50 p-6 rounded-lg border border-yellow-100">
-              <div className="flex items-start">
-                <AlertCircle className="h-5 w-5 text-yellow-500 mr-2 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-gray-800 mb-2">महत्वपूर्ण नोट (Important Note)</h4>
-                  <p className="text-gray-600 text-sm mb-2">यह एक प्रारंभिक निदान है। गंभीर मामलों में कृषि विशेषज्ञ से परामर्श करें।</p>
-                  <p className="text-gray-500 text-sm">(This is a preliminary diagnosis. For severe cases, consult an agricultural expert.)</p>
+                  )}
                 </div>
               </div>
-            </div>
-            
-            <div className="bg-blue-50 p-6 rounded-lg border border-blue-100">
-              <h4 className="font-medium text-gray-800 mb-3">अतिरिक्त सहायता (Additional Help)</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>• कृषि विशेषज्ञ से परामर्श करें (Consult agricultural expert)</li>
-                <li>• स्थानीय कृषि केंद्र पर जाएं (Visit local agriculture center)</li>
-                <li>• समुदाय में सहायता मांगें (Ask for help in community)</li>
-                <li>• सरकारी योजनाओं की जांच करें (Check government schemes)</li>
-              </ul>
-            </div>
-            
-            <div className="bg-green-50 p-6 rounded-lg border border-green-100">
-              <h4 className="font-medium text-gray-800 mb-3">अगले कदम (Next Steps)</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>• उपचार तुरंत शुरू करें (Start treatment immediately)</li>
-                <li>• पौधे की निगरानी करें (Monitor the plant)</li>
-                <li>• परिणामों को रिकॉर्ड करें (Record the results)</li>
-                <li>• अन्य पौधों की जांच करें (Check other plants)</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
+            )}
+
+            {activeTab === 'library' && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Disease Library</h2>
+                
+                {/* Search and Filter */}
+                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      placeholder="Search diseases..."
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                    />
+                  </div>
+                  <div className="w-full md:w-48">
+                    <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                      <option value="">All Plants</option>
+                      <option value="tomato">Tomato</option>
+                      <option value="potato">Potato</option>
+                      <option value="rice">Rice</option>
+                      <option value="wheat">Wheat</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {/* Disease Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* Tomato Late Blight */}
+                  <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="h-48 bg-gray-200 relative">
+                      <img 
+                        src="https://www.gardeningknowhow.com/wp-content/uploads/2019/05/late-blight.jpg" 
+                        alt="Tomato Late Blight" 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 right-2 bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">Severe</div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-bold text-gray-900 mb-1">Tomato Late Blight</h3>
+                      <p className="text-sm text-gray-500 mb-3">Phytophthora infestans</p>
+                      <p className="text-sm text-gray-700 mb-4">A destructive disease that affects tomatoes and potatoes, causing rapid plant death.</p>
+                      <button className="text-green-600 hover:text-green-800 text-sm font-medium flex items-center">
+                        View Details
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Potato Early Blight */}
+                  <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="h-48 bg-gray-200 relative">
+                      <img 
+                        src="https://extension.umn.edu/sites/extension.umn.edu/files/early%20blight.jpg" 
+                        alt="Potato Early Blight" 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 right-2 bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">Moderate</div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-bold text-gray-900 mb-1">Potato Early Blight</h3>
+                      <p className="text-sm text-gray-500 mb-3">Alternaria solani</p>
+                      <p className="text-sm text-gray-700 mb-4">Common fungal disease causing target-like spots on lower leaves.</p>
+                      <button className="text-green-600 hover:text-green-800 text-sm font-medium flex items-center">
+                        View Details
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Rice Blast */}
+                  <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="h-48 bg-gray-200 relative">
+                      <img 
+                        src="https://www.plantmanagementnetwork.org/img/elements/RiceBlast.jpg" 
+                        alt="Rice Blast" 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 right-2 bg-orange-100 text-orange-800 text-xs font-medium px-2.5 py-0.5 rounded">High Risk</div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-bold text-gray-900 mb-1">Rice Blast</h3>
+                      <p className="text-sm text-gray-500 mb-3">Magnaporthe oryzae</p>
+                      <p className="text-sm text-gray-700 mb-4">One of the most destructive rice diseases worldwide.</p>
+                      <button className="text-green-600 hover:text-green-800 text-sm font-medium flex items-center">
+                        View Details
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'practices' && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Safe Practices</h2>
+                
+                {/* Practices Categories */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="bg-green-50 rounded-lg p-4 border border-green-200 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <Droplets className="w-5 h-5 text-green-600" />
+                    </div>
+                    <span className="font-medium text-green-800">Irrigation</span>
+                  </div>
+                  
+                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Sprout className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <span className="font-medium text-blue-800">Crop Rotation</span>
+                  </div>
+                  
+                  <div className="bg-amber-50 rounded-lg p-4 border border-amber-200 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                      <Bug className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <span className="font-medium text-amber-800">Pest Management</span>
+                  </div>
+                </div>
+                
+                {/* Best Practices List */}
+                <div className="space-y-6">
+                  {/* Irrigation Practices */}
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div className="bg-green-50 px-4 py-3 border-b border-gray-200">
+                      <h3 className="font-semibold text-green-800 flex items-center gap-2">
+                        <Droplets className="w-4 h-4" />
+                        Irrigation Best Practices
+                      </h3>
+                    </div>
+                    <div className="p-4">
+                      <ul className="space-y-3">
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-gray-800">Water at the base of plants</p>
+                            <p className="text-sm text-gray-600">Avoid wetting foliage to reduce fungal disease risk</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-gray-800">Water deeply but infrequently</p>
+                            <p className="text-sm text-gray-600">Encourages deeper root growth and drought resistance</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-gray-800">Water early in the morning</p>
+                            <p className="text-sm text-gray-600">Allows foliage to dry during the day, reducing disease risk</p>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  {/* Crop Rotation */}
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div className="bg-blue-50 px-4 py-3 border-b border-gray-200">
+                      <h3 className="font-semibold text-blue-800 flex items-center gap-2">
+                        <Sprout className="w-4 h-4" />
+                        Crop Rotation Strategies
+                      </h3>
+                    </div>
+                    <div className="p-4">
+                      <ul className="space-y-3">
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-gray-800">Rotate crop families</p>
+                            <p className="text-sm text-gray-600">Don't plant the same family in the same location for 3-4 years</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-gray-800">Plan rotations by nutrient needs</p>
+                            <p className="text-sm text-gray-600">Follow heavy feeders with nitrogen-fixing crops</p>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  {/* Pest Management */}
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div className="bg-amber-50 px-4 py-3 border-b border-gray-200">
+                      <h3 className="font-semibold text-amber-800 flex items-center gap-2">
+                        <Bug className="w-4 h-4" />
+                        Integrated Pest Management
+                      </h3>
+                    </div>
+                    <div className="p-4">
+                      <ul className="space-y-3">
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-gray-800">Monitor plants regularly</p>
+                            <p className="text-sm text-gray-600">Early detection allows for less invasive treatments</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-gray-800">Use physical barriers</p>
+                            <p className="text-sm text-gray-600">Row covers, netting, and collars can prevent pest access</p>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -26,8 +26,8 @@ const Navigation = ({ activeTab, onTabChange }) => {
   const primaryNavItems = [
     { id: '/dashboard', label: 'मुख्य', englishLabel: 'Home', icon: <Home className="w-5 h-5" /> },
     { id: '/dashboard/mycrops', label: 'फसलें', englishLabel: 'Crops', icon: <Sprout className="w-5 h-5" /> },
-    { id: '/dashboard/plantDisease', label: 'स्कैन', englishLabel: 'Scan', icon: <Camera className="w-5 h-5" /> },
-    { id: '/dashboard/market', label: 'बाज़ार', englishLabel: 'Market', icon: <TrendingUp className="w-5 h-5" /> }
+    { id: '/dashboard/plantscan', label: 'स्कैन', englishLabel: 'Scan', icon: <Camera className="w-5 h-5" /> },
+    { id: '/dashboard/crop-guide', label: 'गाइड', englishLabel: 'Guide', icon: <BookOpen className="w-5 h-5" /> }
   ];
 
   // Categorized navigation items for full menu
@@ -47,6 +47,14 @@ const Navigation = ({ activeTab, onTabChange }) => {
       items: [
         { id: '/dashboard/plantscan', label: 'पौधा स्कैन', englishLabel: 'Plant Scan', icon: <Camera className="w-6 h-6" />, color: 'bg-purple-100 text-purple-600' },
         { id: '/dashboard/soilAnalysis', label: 'मिट्टी विश्लेषण', englishLabel: 'Soil Analysis', icon: <Microscope className="w-6 h-6" />, color: 'bg-orange-100 text-orange-600' }
+      ]
+    },
+    {
+      title: 'कृषि गाइड',
+      englishTitle: 'Farming Guide',
+      items: [
+        { id: '/dashboard/crop-guide', label: 'फसल गाइड', englishLabel: 'Crop Guide', icon: <BookOpen className="w-6 h-6" />, color: 'bg-emerald-100 text-emerald-600' },
+        { id: '/dashboard/weather', label: 'मौसम', englishLabel: 'Weather', icon: <Droplets className="w-6 h-6" />, color: 'bg-sky-100 text-sky-600' }
       ]
     },
     {

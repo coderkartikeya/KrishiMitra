@@ -1,0 +1,309 @@
+{
+  "mandis": {
+    "delhi": {
+      "id": "delhi",
+      "name": "अजमेरी गेट मंडी",
+      "location": "दिल्ली",
+      "state": "दिल्ली",
+      "coordinates": { "lat": 28.6139, "lng": 77.2090 },
+      "established": "1950",
+      "size": "500 एकड़",
+      "crops": ["गेहूं", "चावल", "सब्जियां", "फल"],
+      "contact": "+91-11-23456789",
+      "website": "www.delhimandi.gov.in"
+    },
+    "mumbai": {
+      "id": "mumbai", 
+      "name": "वाशी एपीएमसी मंडी",
+      "location": "मुंबई",
+      "state": "महाराष्ट्र",
+      "coordinates": { "lat": 19.0760, "lng": 72.8777 },
+      "established": "1970",
+      "size": "300 एकड़",
+      "crops": ["सब्जियां", "फल", "फूल", "सूखे मेवे"],
+      "contact": "+91-22-23456789",
+      "website": "www.mumbaiapmc.gov.in"
+    },
+    "bangalore": {
+      "id": "bangalore",
+      "name": "कृषि उत्पाद मंडी",
+      "location": "बैंगलोर",
+      "state": "कर्नाटक", 
+      "coordinates": { "lat": 12.9716, "lng": 77.5946 },
+      "established": "1985",
+      "size": "200 एकड़",
+      "crops": ["सब्जियां", "फल", "सूखे मेवे", "मसाले"],
+      "contact": "+91-80-23456789",
+      "website": "www.bangaloremandi.gov.in"
+    },
+    "kolkata": {
+      "id": "kolkata",
+      "name": "बरासात मंडी",
+      "location": "कोलकाता",
+      "state": "पश्चिम बंगाल",
+      "coordinates": { "lat": 22.5726, "lng": 88.3639 },
+      "established": "1960",
+      "size": "150 एकड़", 
+      "crops": ["चावल", "सब्जियां", "फल", "मछली"],
+      "contact": "+91-33-23456789",
+      "website": "www.kolkatamandi.gov.in"
+    },
+    "chennai": {
+      "id": "chennai",
+      "name": "कॉयम्बटूर मंडी",
+      "location": "चेन्नई",
+      "state": "तमिलनाडु",
+      "coordinates": { "lat": 13.0827, "lng": 80.2707 },
+      "established": "1975",
+      "size": "180 एकड़",
+      "crops": ["सब्जियां", "फल", "सूखे मेवे", "मसाले"],
+      "contact": "+91-44-23456789",
+      "website": "www.chennaimandi.gov.in"
+    },
+    "hyderabad": {
+      "id": "hyderabad",
+      "name": "राजेंद्रनगर मंडी",
+      "location": "हैदराबाद",
+      "state": "तेलंगाना",
+      "coordinates": { "lat": 17.3850, "lng": 78.4867 },
+      "established": "1980",
+      "size": "250 एकड़",
+      "crops": ["चावल", "सब्जियां", "फल", "मसाले"],
+      "contact": "+91-40-23456789",
+      "website": "www.hyderabadmandi.gov.in"
+    },
+    "pune": {
+      "id": "pune",
+      "name": "पुणे एपीएमसी मंडी",
+      "location": "पुणे",
+      "state": "महाराष्ट्र",
+      "coordinates": { "lat": 18.5204, "lng": 73.8567 },
+      "established": "1972",
+      "size": "220 एकड़",
+      "crops": ["सब्जियां", "फल", "फूल", "सूखे मेवे"],
+      "contact": "+91-20-23456789",
+      "website": "www.punemandi.gov.in"
+    },
+    "ahmedabad": {
+      "id": "ahmedabad",
+      "name": "नारोल मंडी",
+      "location": "अहमदाबाद",
+      "state": "गुजरात",
+      "coordinates": { "lat": 23.0225, "lng": 72.5714 },
+      "established": "1965",
+      "size": "300 एकड़",
+      "crops": ["सब्जियां", "फल", "सूखे मेवे", "मसाले"],
+      "contact": "+91-79-23456789",
+      "website": "www.ahmedabadmandi.gov.in"
+    }
+  },
+  "crops": {
+    "wheat": {
+      "name": "गेहूं",
+      "unit": "क्विंटल",
+      "currentPrice": 2500,
+      "priceChange": 5.2,
+      "trend": "up",
+      "mandiPrices": {
+        "delhi": { "price": 2550, "change": 3.5, "volume": 1500 },
+        "mumbai": { "price": 2480, "change": 4.2, "volume": 1200 },
+        "bangalore": { "price": 2520, "change": 2.8, "volume": 800 },
+        "kolkata": { "price": 2460, "change": 6.1, "volume": 1000 },
+        "chennai": { "price": 2580, "change": 1.9, "volume": 600 },
+        "hyderabad": { "price": 2490, "change": 3.8, "volume": 900 },
+        "pune": { "price": 2510, "change": 4.5, "volume": 1100 },
+        "ahmedabad": { "price": 2470, "change": 5.2, "volume": 1300 }
+      },
+      "priceHistory": [
+        { "date": "2024-01-01", "price": 2400 },
+        { "date": "2024-01-15", "price": 2420 },
+        { "date": "2024-02-01", "price": 2450 },
+        { "date": "2024-02-15", "price": 2480 },
+        { "date": "2024-03-01", "price": 2500 },
+        { "date": "2024-03-15", "price": 2520 },
+        { "date": "2024-04-01", "price": 2500 }
+      ]
+    },
+    "rice": {
+      "name": "चावल",
+      "unit": "क्विंटल",
+      "currentPrice": 3200,
+      "priceChange": -2.1,
+      "trend": "down",
+      "mandiPrices": {
+        "delhi": { "price": 3250, "change": -1.5, "volume": 2000 },
+        "mumbai": { "price": 3180, "change": -2.8, "volume": 1800 },
+        "bangalore": { "price": 3220, "change": -1.2, "volume": 1500 },
+        "kolkata": { "price": 3150, "change": -3.2, "volume": 2200 },
+        "chennai": { "price": 3280, "change": -0.8, "volume": 1200 },
+        "hyderabad": { "price": 3200, "change": -2.5, "volume": 1600 },
+        "pune": { "price": 3190, "change": -2.1, "volume": 1400 },
+        "ahmedabad": { "price": 3210, "change": -1.8, "volume": 1700 }
+      },
+      "priceHistory": [
+        { "date": "2024-01-01", "price": 3300 },
+        { "date": "2024-01-15", "price": 3280 },
+        { "date": "2024-02-01", "price": 3250 },
+        { "date": "2024-02-15", "price": 3220 },
+        { "date": "2024-03-01", "price": 3200 },
+        { "date": "2024-03-15", "price": 3180 },
+        { "date": "2024-04-01", "price": 3200 }
+      ]
+    },
+    "sugarcane": {
+      "name": "गन्ना",
+      "unit": "क्विंटल",
+      "currentPrice": 350,
+      "priceChange": 8.5,
+      "trend": "up",
+      "mandiPrices": {
+        "delhi": { "price": 360, "change": 7.2, "volume": 5000 },
+        "mumbai": { "price": 355, "change": 8.1, "volume": 4500 },
+        "bangalore": { "price": 345, "change": 6.8, "volume": 3000 },
+        "kolkata": { "price": 350, "change": 9.2, "volume": 4000 },
+        "chennai": { "price": 365, "change": 5.5, "volume": 2500 },
+        "hyderabad": { "price": 352, "change": 7.8, "volume": 3500 },
+        "pune": { "price": 358, "change": 8.5, "volume": 4200 },
+        "ahmedabad": { "price": 348, "change": 9.1, "volume": 4800 }
+      },
+      "priceHistory": [
+        { "date": "2024-01-01", "price": 320 },
+        { "date": "2024-01-15", "price": 325 },
+        { "date": "2024-02-01", "price": 330 },
+        { "date": "2024-02-15", "price": 335 },
+        { "date": "2024-03-01", "price": 340 },
+        { "date": "2024-03-15", "price": 345 },
+        { "date": "2024-04-01", "price": 350 }
+      ]
+    },
+    "tomato": {
+      "name": "टमाटर",
+      "unit": "क्विंटल",
+      "currentPrice": 1200,
+      "priceChange": -15.3,
+      "trend": "down",
+      "mandiPrices": {
+        "delhi": { "price": 1250, "change": -12.5, "volume": 800 },
+        "mumbai": { "price": 1180, "change": -16.2, "volume": 1000 },
+        "bangalore": { "price": 1220, "change": -14.8, "volume": 600 },
+        "kolkata": { "price": 1150, "change": -18.1, "volume": 700 },
+        "chennai": { "price": 1280, "change": -11.2, "volume": 500 },
+        "hyderabad": { "price": 1200, "change": -15.5, "volume": 900 },
+        "pune": { "price": 1190, "change": -16.8, "volume": 750 },
+        "ahmedabad": { "price": 1210, "change": -14.2, "volume": 850 }
+      },
+      "priceHistory": [
+        { "date": "2024-01-01", "price": 1400 },
+        { "date": "2024-01-15", "price": 1350 },
+        { "date": "2024-02-01", "price": 1300 },
+        { "date": "2024-02-15", "price": 1250 },
+        { "date": "2024-03-01", "price": 1200 },
+        { "date": "2024-03-15", "price": 1150 },
+        { "date": "2024-04-01", "price": 1200 }
+      ]
+    },
+    "potato": {
+      "name": "आलू",
+      "unit": "क्विंटल",
+      "currentPrice": 800,
+      "priceChange": 3.2,
+      "trend": "up",
+      "mandiPrices": {
+        "delhi": { "price": 820, "change": 2.8, "volume": 2000 },
+        "mumbai": { "price": 790, "change": 3.5, "volume": 1800 },
+        "bangalore": { "price": 810, "change": 2.1, "volume": 1500 },
+        "kolkata": { "price": 780, "change": 4.2, "volume": 2200 },
+        "chennai": { "price": 830, "change": 1.8, "volume": 1200 },
+        "hyderabad": { "price": 800, "change": 3.8, "volume": 1600 },
+        "pune": { "price": 795, "change": 3.2, "volume": 1400 },
+        "ahmedabad": { "price": 805, "change": 2.9, "volume": 1700 }
+      },
+      "priceHistory": [
+        { "date": "2024-01-01", "price": 780 },
+        { "date": "2024-01-15", "price": 785 },
+        { "date": "2024-02-01", "price": 790 },
+        { "date": "2024-02-15", "price": 795 },
+        { "date": "2024-03-01", "price": 800 },
+        { "date": "2024-03-15", "price": 805 },
+        { "date": "2024-04-01", "price": 800 }
+      ]
+    },
+    "onion": {
+      "name": "प्याज",
+      "unit": "क्विंटल",
+      "currentPrice": 1800,
+      "priceChange": 12.5,
+      "trend": "up",
+      "mandiPrices": {
+        "delhi": { "price": 1850, "change": 11.2, "volume": 1200 },
+        "mumbai": { "price": 1780, "change": 13.8, "volume": 1500 },
+        "bangalore": { "price": 1820, "change": 10.5, "volume": 1000 },
+        "kolkata": { "price": 1750, "change": 15.2, "volume": 1300 },
+        "chennai": { "price": 1880, "change": 9.8, "volume": 800 },
+        "hyderabad": { "price": 1800, "change": 12.5, "volume": 1100 },
+        "pune": { "price": 1790, "change": 13.1, "volume": 1400 },
+        "ahmedabad": { "price": 1810, "change": 11.8, "volume": 1600 }
+      },
+      "priceHistory": [
+        { "date": "2024-01-01", "price": 1600 },
+        { "date": "2024-01-15", "price": 1650 },
+        { "date": "2024-02-01", "price": 1700 },
+        { "date": "2024-02-15", "price": 1750 },
+        { "date": "2024-03-01", "price": 1800 },
+        { "date": "2024-03-15", "price": 1850 },
+        { "date": "2024-04-01", "price": 1800 }
+      ]
+    }
+  },
+  "marketAnalysis": {
+    "trends": {
+      "rising": ["गेहूं", "गन्ना", "आलू", "प्याज"],
+      "falling": ["चावल", "टमाटर"],
+      "stable": ["सब्जियां", "फल"]
+    },
+    "seasonalFactors": {
+      "rabi": {
+        "crops": ["गेहूं", "चना", "सरसों"],
+        "peakSeason": "मार्च-अप्रैल",
+        "priceTrend": "बढ़ती"
+      },
+      "kharif": {
+        "crops": ["चावल", "मक्का", "सोयाबीन"],
+        "peakSeason": "सितंबर-अक्टूबर", 
+        "priceTrend": "स्थिर"
+      },
+      "zaid": {
+        "crops": ["सब्जियां", "फल", "फूल"],
+        "peakSeason": "जनवरी-मार्च",
+        "priceTrend": "अस्थिर"
+      }
+    },
+    "regionalAnalysis": {
+      "north": {
+        "states": ["दिल्ली", "पंजाब", "हरियाणा", "उत्तर प्रदेश"],
+        "majorCrops": ["गेहूं", "चावल", "सरसों"],
+        "priceLevel": "मध्यम",
+        "demand": "उच्च"
+      },
+      "south": {
+        "states": ["कर्नाटक", "तमिलनाडु", "केरल", "आंध्र प्रदेश"],
+        "majorCrops": ["चावल", "सब्जियां", "फल"],
+        "priceLevel": "उच्च",
+        "demand": "मध्यम"
+      },
+      "west": {
+        "states": ["महाराष्ट्र", "गुजरात", "राजस्थान"],
+        "majorCrops": ["सब्जियां", "फल", "सूखे मेवे"],
+        "priceLevel": "उच्च",
+        "demand": "उच्च"
+      },
+      "east": {
+        "states": ["पश्चिम बंगाल", "ओडिशा", "बिहार"],
+        "majorCrops": ["चावल", "सब्जियां", "मछली"],
+        "priceLevel": "मध्यम",
+        "demand": "मध्यम"
+      }
+    }
+  }
+}
+
