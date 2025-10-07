@@ -266,7 +266,7 @@ const MyCropsPage = () => {
                     <Calendar className="w-4 h-4" />
                     <span className="text-sm">Planted</span>
                   </div>
-                  <span className="text-sm font-medium">{formatDate(crop.plantedDate)}</span>
+                  <span className="text-sm font-medium text-gray-900">{formatDate(crop.plantedDate)}</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
@@ -274,15 +274,15 @@ const MyCropsPage = () => {
                     <Sprout className="w-4 h-4" />
                     <span className="text-sm">Area</span>
                   </div>
-                  <span className="text-sm font-medium">{crop.area} {crop.unit}</span>
-                </div>
+                  <span className="text-sm font-medium text-gray-900">{crop.area} {crop.unit}</span>
+              </div>
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-gray-600">
                     <TrendingUp className="w-4 h-4" />
                     <span className="text-sm">Days Since Planting</span>
                   </div>
-                  <span className="text-sm font-medium">{getDaysSincePlanting(crop.plantedDate)} days</span>
+                  <span className="text-sm font-medium text-gray-900">{getDaysSincePlanting(crop.plantedDate)} days</span>
                 </div>
 
                 {crop.expectedYield && (
@@ -291,7 +291,7 @@ const MyCropsPage = () => {
                       <DollarSign className="w-4 h-4" />
                       <span className="text-sm">Expected Yield</span>
                     </div>
-                    <span className="text-sm font-medium">{crop.expectedYield} {crop.yieldUnit}</span>
+                    <span className="text-sm font-medium text-gray-900">{crop.expectedYield} {crop.yieldUnit}</span>
                   </div>
                 )}
 
@@ -301,7 +301,7 @@ const MyCropsPage = () => {
                       <DollarSign className="w-4 h-4" />
                       <span className="text-sm">Investment</span>
                     </div>
-                    <span className="text-sm font-medium">₹{crop.investment.total.toLocaleString()}</span>
+                    <span className="text-sm font-medium text-gray-900">₹{crop.investment.total.toLocaleString()}</span>
                   </div>
                 )}
               </div>
@@ -313,7 +313,7 @@ const MyCropsPage = () => {
                   <p className="text-sm text-blue-700">
                     {crop.careSchedule.find(task => task.status === 'pending')?.task || 'No pending tasks'}
                   </p>
-                </div>
+              </div>
               )}
             </div>
           </motion.div>

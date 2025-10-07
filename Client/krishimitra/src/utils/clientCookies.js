@@ -87,3 +87,4 @@ export const getTokenFromRequest = (req) => {
   // This function is mainly for server-side use
   return getAccessTokenFromCookie();
 };
+

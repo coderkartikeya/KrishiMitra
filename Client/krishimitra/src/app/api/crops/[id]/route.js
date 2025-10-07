@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import connectDB from '../../../db/connection.js';
-import Crop from '../../../db/models/Crop.js';
-import { authenticateToken } from '../../../middleware/auth';
+import connectDB from '../../../../db/connection.js';
+import Crop from '../../../../db/models/Crop.js';
+import { authenticateToken } from '../../../../middleware/auth.js';
 
 // GET /api/crops/[id] - Get a specific crop
 export async function GET(request, { params }) {

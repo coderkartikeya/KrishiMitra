@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sprout, ArrowLeft, Save, Calendar, MapPin, Droplets, Sun, AlertCircle, CheckCircle } from 'lucide-react';
 import DashboardLayout from '../../../components/dashboard/DashboardLayout';
-import { useAuth } from '../../../middleware/clientAuth';
+import { useAuth } from '../../../middleware/clientAuth.js';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const AddCropPage = () => {
@@ -254,7 +254,7 @@ const AddCropPage = () => {
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500 ${
                   validationErrors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="e.g., Wheat"
@@ -272,7 +272,7 @@ const AddCropPage = () => {
                 type="text"
                 value={formData.localName}
                 onChange={(e) => handleInputChange('localName', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500 ${
                   validationErrors.localName ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="e.g., गेहूं"
@@ -290,7 +290,7 @@ const AddCropPage = () => {
                 type="text"
                 value={formData.variety}
                 onChange={(e) => handleInputChange('variety', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500 ${
                   validationErrors.variety ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="e.g., HD-2967"
@@ -307,7 +307,7 @@ const AddCropPage = () => {
               <select
                 value={formData.category}
                 onChange={(e) => handleInputChange('category', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 ${
                   validationErrors.category ? 'border-red-500' : 'border-gray-300'
                 }`}
               >
@@ -346,7 +346,7 @@ const AddCropPage = () => {
                 min="0.1"
                 value={formData.area}
                 onChange={(e) => handleInputChange('area', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500 ${
                   validationErrors.area ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="2.5"
@@ -363,7 +363,7 @@ const AddCropPage = () => {
               <select
                 value={formData.unit}
                 onChange={(e) => handleInputChange('unit', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
               >
                 <option value="acres">Acres</option>
                 <option value="hectares">Hectares</option>
@@ -379,7 +379,7 @@ const AddCropPage = () => {
               <select
                 value={formData.soilType}
                 onChange={(e) => handleInputChange('soilType', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
               >
                 {soilTypes.map(soil => (
                   <option key={soil.value} value={soil.value}>{soil.label}</option>
@@ -410,7 +410,7 @@ const AddCropPage = () => {
                 type="date"
                 value={formData.plantedDate}
                 onChange={(e) => handleInputChange('plantedDate', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 ${
                   validationErrors.plantedDate ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -427,7 +427,7 @@ const AddCropPage = () => {
                 type="date"
                 value={formData.expectedHarvestDate}
                 onChange={(e) => handleInputChange('expectedHarvestDate', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 ${
                   validationErrors.expectedHarvestDate ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -463,7 +463,7 @@ const AddCropPage = () => {
               <select
                 value={formData.irrigationType}
                 onChange={(e) => handleInputChange('irrigationType', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
               >
                 {irrigationTypes.map(irr => (
                   <option key={irr.value} value={irr.value}>{irr.label}</option>
@@ -478,7 +478,7 @@ const AddCropPage = () => {
               <select
                 value={formData.waterRequirement}
                 onChange={(e) => handleInputChange('waterRequirement', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
               >
                 <option value="low">Low (कम)</option>
                 <option value="medium">Medium (मध्यम)</option>
@@ -511,7 +511,7 @@ const AddCropPage = () => {
                 min="0"
                 value={formData.expectedYield}
                 onChange={(e) => handleInputChange('expectedYield', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                 placeholder="25"
               />
             </div>
@@ -523,7 +523,7 @@ const AddCropPage = () => {
               <select
                 value={formData.yieldUnit}
                 onChange={(e) => handleInputChange('yieldUnit', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
               >
                 <option value="quintals">Quintals</option>
                 <option value="tons">Tons</option>
@@ -557,7 +557,7 @@ const AddCropPage = () => {
                 min="0"
                 value={formData.investment.seeds}
                 onChange={(e) => handleInvestmentChange('seeds', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                 placeholder="0"
               />
             </div>
@@ -572,7 +572,7 @@ const AddCropPage = () => {
                 min="0"
                 value={formData.investment.fertilizers}
                 onChange={(e) => handleInvestmentChange('fertilizers', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                 placeholder="0"
               />
             </div>
@@ -587,7 +587,7 @@ const AddCropPage = () => {
                 min="0"
                 value={formData.investment.pesticides}
                 onChange={(e) => handleInvestmentChange('pesticides', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                 placeholder="0"
               />
             </div>
@@ -602,7 +602,7 @@ const AddCropPage = () => {
                 min="0"
                 value={formData.investment.irrigation}
                 onChange={(e) => handleInvestmentChange('irrigation', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                 placeholder="0"
               />
             </div>
@@ -617,7 +617,7 @@ const AddCropPage = () => {
                 min="0"
                 value={formData.investment.labor}
                 onChange={(e) => handleInvestmentChange('labor', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                 placeholder="0"
               />
             </div>
@@ -632,7 +632,7 @@ const AddCropPage = () => {
                 min="0"
                 value={formData.investment.other}
                 onChange={(e) => handleInvestmentChange('other', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                 placeholder="0"
               />
             </div>
@@ -661,7 +661,7 @@ const AddCropPage = () => {
             value={formData.notes}
             onChange={(e) => handleInputChange('notes', e.target.value)}
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
             placeholder="Add any additional notes about this crop..."
           />
         </motion.div>
@@ -706,3 +706,4 @@ const AddCropPage = () => {
 };
 
 export default AddCropPage;
+
