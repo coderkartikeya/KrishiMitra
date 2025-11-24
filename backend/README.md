@@ -102,3 +102,4 @@ curl -X POST "http://127.0.0.1:8000/api/soil/analyze" \
      -d '{"ph_level": 6.5, "moisture_content": 60}'
 ```
 
+

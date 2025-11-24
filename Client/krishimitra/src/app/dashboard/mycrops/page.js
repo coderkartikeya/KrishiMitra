@@ -118,7 +118,9 @@ const MyCropsPage = () => {
       title="मेरी फसलें (My Crops)" 
       subtitle="Track and manage your crops"
       icon={<Sprout className="w-6 h-6 text-green-600" />}
+      activeTab="/dashboard/mycrops"
     >
+      <div className="p-4 md:p-6 pb-20">
       {/* Stats Overview */}
       {stats && (
         <motion.div 
@@ -354,8 +356,9 @@ const MyCropsPage = () => {
           </motion.button>
         </motion.div>
       )}
-    </DashboardLayout>
-  );
-};
+      </div>
+    </DashboardLayout>  
+  )
+}
 
 export default MyCropsPage;

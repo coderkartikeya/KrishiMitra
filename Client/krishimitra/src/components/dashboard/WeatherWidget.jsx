@@ -1,242 +1,244 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Cloud, Droplets, Wind, Eye, Sun, CloudRain, CloudSnow, CloudFog, Thermometer } from 'lucide-react';
+import { Cloud, Droplets, Wind, Sun, CloudRain, CloudSnow, CloudFog, Thermometer, MapPin, Calendar, ArrowUp, ArrowDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { fetchWeather, getWeatherCondition } from '../../services/weatherService';
 
 const WeatherWidget = ({ location = 'Meerut, UP' }) => {
-  const [weather, setWeather] = useState({
-    temperature: 24,
-    condition: 'Partly Cloudy',
-    hindiCondition: 'आंशिक बादल',
-    humidity: 65,
-    windSpeed: 12,
-    visibility: 'Good',
-    feelsLike: 26,
-    isLoading: true,
-    error: null,
-    forecast: [
-      { day: 'आज', englishDay: 'Today', temp: 24, condition: 'आंशिक बादल', englishCondition: 'Partly Cloudy' },
-      { day: 'कल', englishDay: 'Tomorrow', temp: 26, condition: 'धूप', englishCondition: 'Sunny' },
-      { day: 'परसों', englishDay: 'Day After', temp: 25, condition: 'बादल', englishCondition: 'Cloudy' },
-    ]
-  });
+  const [weatherData, setWeatherData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchWeatherData = async () => {
+    const loadWeather = async () => {
       try {
-        // In a real app, this would be an API call
-        // const response = await fetch(`/api/weather?location=${encodeURIComponent(location)}`);
-        // const data = await response.json();
-        
-        // Simulate API response delay
-        setTimeout(() => {
-          setWeather({
-            temperature: 24,
-            condition: 'Partly Cloudy',
-            hindiCondition: 'आंशिक रूप से बादल',
-            humidity: 65,
-            windSpeed: 12,
-            visibility: 'Good',
-            feelsLike: 26,
-            isLoading: false,
-            error: null,
-            forecast: [
-              { day: 'आज', englishDay: 'Today', temp: 24, condition: 'आंशिक रूप से बादल', englishCondition: 'Partly Cloudy' },
-              { day: 'कल', englishDay: 'Tomorrow', temp: 26, condition: 'धूप', englishCondition: 'Sunny' },
-              { day: 'परसों', englishDay: 'Day After', temp: 25, condition: 'बादल', englishCondition: 'Cloudy' },
-            ]
-          });
-        }, 1500);
-      } catch (error) {
-        setWeather(prev => ({
-          ...prev,
-          isLoading: false,
-          error: 'मौसम डेटा लोड करने में विफल'
-        }));
+        setLoading(true);
+        // Default to Meerut coordinates if not provided differently
+        // In a real app, you might geocode the location string
+        const data = await fetchWeather(28.9845, 77.7064);
+        setWeatherData(data);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load weather data');
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchWeatherData();
+    loadWeather();
   }, [location]);
 
-  // Get weather icon based on condition
-  const getWeatherIcon = (condition) => {
-    if (!condition) return <Sun size={36} className="text-yellow-500" />;
-    
-    const conditionLower = condition.toLowerCase();
-    
-    if (conditionLower.includes('rain') || conditionLower.includes('shower') || 
-        conditionLower.includes('बारिश')) {
-      return <CloudRain size={36} className="text-blue-500" />;
-    } else if (conditionLower.includes('snow') || conditionLower.includes('बर्फ')) {
-      return <CloudSnow size={36} className="text-blue-200" />;
-    } else if (conditionLower.includes('fog') || conditionLower.includes('mist') || 
-               conditionLower.includes('haze') || conditionLower.includes('कोहरा') || 
-               conditionLower.includes('धुंध')) {
-      return <CloudFog size={36} className="text-gray-400" />;
-    } else if (conditionLower.includes('cloud') || conditionLower.includes('overcast') || 
-               conditionLower.includes('बादल')) {
-      return <Cloud size={36} className="text-gray-500" />;
-    } else {
-      return <Sun size={36} className="text-yellow-500" />;
+  // Helper to get icon component
+  const getIconComponent = (iconName, size = 24, className = "") => {
+    switch (iconName) {
+      case 'sun': return <Sun size={size} className={`text-yellow-400 ${className}`} />;
+      case 'sun_cloud': return <Cloud size={size} className={`text-yellow-200 ${className}`} />; // Simplified
+      case 'cloud_sun': return <Cloud size={size} className={`text-gray-100 ${className}`} />;
+      case 'cloud': return <Cloud size={size} className={`text-gray-200 ${className}`} />;
+      case 'fog': return <CloudFog size={size} className={`text-gray-300 ${className}`} />;
+      case 'rain_light': return <CloudRain size={size} className={`text-blue-300 ${className}`} />;
+      case 'rain': return <CloudRain size={size} className={`text-blue-400 ${className}`} />;
+      case 'rain_heavy': return <CloudRain size={size} className={`text-blue-500 ${className}`} />;
+      case 'snow': return <CloudSnow size={size} className={`text-white ${className}`} />;
+      case 'thunder': return <CloudRain size={size} className={`text-purple-400 ${className}`} />;
+      default: return <Sun size={size} className={`text-yellow-400 ${className}`} />;
     }
   };
 
-  // Get farming advice based on weather in Hindi and English
-  const getFarmingAdvice = (weather) => {
-    const lowerCondition = weather.condition.toLowerCase();
-    
-    if (lowerCondition.includes('rain') || lowerCondition.includes('drizzle') || lowerCondition.includes('shower') || 
-        weather.hindiCondition.includes('बारिश')) {
+  // Get farming advice based on weather code and temp
+  const getFarmingAdvice = (current) => {
+    const code = current.weather_code;
+    const temp = current.temperature_2m;
+    const wind = current.wind_speed_10m;
+
+    // Rain conditions
+    if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) {
       return {
         hindi: 'बारिश के कारण खेत के काम को स्थगित करने पर विचार करें। घर के अंदर के कामों के लिए अच्छा समय है। ☔',
-        english: 'Consider postponing field work due to rain. Good time for indoor tasks. ☔'
+        english: 'Consider postponing field work due to rain. Good time for indoor tasks. ☔',
+        type: 'rain'
       };
     }
-    
-    if (lowerCondition.includes('thunder') || lowerCondition.includes('storm')) {
+
+    // Thunderstorm
+    if ([95, 96, 99].includes(code)) {
       return {
-        english: "Keep livestock sheltered. Avoid working in open fields. Ensure proper drainage in your fields.",
-        hindi: "पशुधन को आश्रय दें। खुले खेतों में काम करने से बचें। अपने खेतों में उचित जल निकासी सुनिश्चित करें।"
+        english: "Keep livestock sheltered. Avoid working in open fields. Ensure proper drainage.",
+        hindi: "पशुधन को आश्रय दें। खुले खेतों में काम करने से बचें। उचित जल निकासी सुनिश्चित करें।",
+        type: 'storm'
       };
     }
-    
-    if (lowerCondition.includes('snow') || lowerCondition.includes('sleet') || lowerCondition.includes('blizzard')) {
-      return {
-        english: "Protect sensitive crops from frost. Ensure livestock have warm shelter and adequate feed.",
-        hindi: "संवेदनशील फसलों को ठंड से बचाएं। सुनिश्चित करें कि पशुधन के पास गर्म आश्रय और पर्याप्त चारा है।"
-      };
-    }
-    
-    if (lowerCondition.includes('fog') || lowerCondition.includes('mist')) {
-      return {
-        english: "Good time for light irrigation. Avoid spraying operations until visibility improves.",
-        hindi: "हल्की सिंचाई के लिए अच्छा समय। दृश्यता में सुधार होने तक छिड़काव से बचें।"
-      };
-    }
-    
-    if (lowerCondition.includes('clear') || lowerCondition.includes('sunny')) {
-      return {
-        english: "Excellent day for harvesting, drying grains, and solar-dependent activities. Ensure adequate irrigation.",
-        hindi: "फसल कटाई, अनाज सुखाने और सौर-निर्भर गतिविधियों के लिए उत्कृष्ट दिन। पर्याप्त सिंचाई सुनिश्चित करें।"
-      };
-    }
-    
-    if (weather.temperature > 30) {
+
+    // High Temp
+    if (temp > 35) {
       return {
         hindi: 'आज उच्च तापमान है। फसलों को पर्याप्त पानी सुनिश्चित करें। 💧',
-        english: 'High temperatures today. Ensure crops have adequate water. 💧'
+        english: 'High temperatures today. Ensure crops have adequate water. 💧',
+        type: 'heat'
       };
     }
-    
-    if (weather.windSpeed > 20) {
+
+    // High Wind
+    if (wind > 20) {
       return {
         hindi: 'तेज हवाओं की उम्मीद है। किसी भी ढीले उपकरण या संरचनाओं को सुरक्षित करें। 🌬️',
-        english: 'Strong winds expected. Secure any loose equipment or structures. 🌬️'
+        english: 'Strong winds expected. Secure any loose equipment or structures. 🌬️',
+        type: 'wind'
       };
     }
-    
+
     return {
       hindi: 'आज खेत के काम के लिए एकदम सही मौसम! 🌾',
-      english: 'Perfect weather for field work today! 🌾'
+      english: 'Perfect weather for field work today! 🌾',
+      type: 'good'
     };
   };
 
-  if (weather.isLoading) {
+  if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-md p-6 animate-pulse border-2 border-blue-100">
-        <div className="h-10 bg-gray-200 rounded w-1/3 mb-4"></div>
-        <div className="h-20 bg-gray-200 rounded mb-4"></div>
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="h-14 bg-gray-200 rounded"></div>
-          <div className="h-14 bg-gray-200 rounded"></div>
-          <div className="h-14 bg-gray-200 rounded"></div>
-          <div className="h-14 bg-gray-200 rounded"></div>
+      <div className="w-full h-96 bg-white/50 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-green-800 font-medium animate-pulse">Loading Weather Data...</p>
         </div>
-        <div className="h-20 bg-gray-200 rounded"></div>
       </div>
     );
   }
 
-  if (weather.error) {
+  if (error || !weatherData) {
     return (
-      <div className="bg-white rounded-2xl shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Weather Information</h2>
-        <p className="text-red-500">{weather.error}</p>
-        <p className="mt-2">Unable to load weather data for {location}. Please try again later.</p>
+      <div className="w-full h-64 bg-red-50 rounded-3xl border border-red-100 p-8 flex items-center justify-center">
+        <div className="text-center text-red-500">
+          <p className="font-bold text-lg mb-2">Error Loading Weather</p>
+          <p>{error || "Data unavailable"}</p>
+        </div>
       </div>
     );
   }
+
+  const current = weatherData.current;
+  const condition = getWeatherCondition(current.weather_code);
+  const advice = getFarmingAdvice(current);
+  const daily = weatherData.daily;
+
+  // Format date
+  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-md overflow-hidden border-2 border-blue-100">
-      {/* Simplified Weather Header */}
-      <div className="bg-blue-500 text-white p-4">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            {getWeatherIcon(weather.condition)}
-            <div>
-              <h3 className="text-2xl font-bold">Today's Weather</h3>
-              <p className="text-lg">आज का मौसम</p>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="relative overflow-hidden rounded-3xl shadow-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-blue-800 text-white p-6 md:p-8"
+    >
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-blue-400/20 rounded-full blur-2xl"></div>
+
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="flex justify-between items-start mb-8">
+          <div>
+            <div className="flex items-center gap-2 text-blue-100 mb-1">
+              <MapPin size={18} />
+              <span className="font-medium tracking-wide">{location}</span>
             </div>
+            <h2 className="text-3xl font-bold text-white">{today}</h2>
           </div>
-          <div className="text-center">
-            <span className="text-6xl font-bold">{weather.temperature}°C</span>
-            <div className="mt-1 text-center">
-              <div className="text-lg font-medium">{weather.condition}</div>
-              <div className="text-lg">{weather.hindiCondition}</div>
-            </div>
+          <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+            <span className="font-semibold text-sm">Live Update</span>
           </div>
         </div>
-      </div>
-      
-      {/* Simplified Weather Content */}
-      <div className="p-4">
-        {/* Farming advice - Most important for farmers */}
-        <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 mb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Sun className="text-green-600" size={24} />
-            <h3 className="text-xl font-bold text-green-800">Farming Advice <span className="text-green-600">(कृषि सलाह)</span></h3>
-          </div>
-          <p className="text-lg text-green-700 font-medium">{getFarmingAdvice(weather).english}</p>
-          <p className="text-lg text-green-600">{getFarmingAdvice(weather).hindi}</p>
-        </div>
-        
-        {/* Essential Weather Details - Simplified */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="flex items-center bg-blue-50 p-3 rounded-lg border-2 border-blue-200">
-            <Droplets className="text-blue-500 mr-3" size={28} />
-            <div>
-              <p className="text-base text-gray-500">Humidity <span>(नमी)</span></p>
-              <p className="text-xl font-bold">{weather.humidity}%</p>
+
+        {/* Main Weather Display */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-10">
+          <div className="flex items-center gap-6">
+            <div className="p-4 bg-white/10 rounded-3xl backdrop-blur-sm border border-white/10 shadow-inner">
+              {getIconComponent(condition.icon, 80, "drop-shadow-lg")}
             </div>
-          </div>
-          <div className="flex items-center bg-blue-50 p-3 rounded-lg border-2 border-blue-200">
-            <Wind className="text-blue-500 mr-3" size={28} />
             <div>
-              <p className="text-base text-gray-500">Wind <span>(हवा)</span></p>
-              <p className="text-xl font-bold">{weather.windSpeed} km/h</p>
-            </div>
-          </div>
-        </div>
-        
-        {/* Simplified Forecast */}
-        <div className="bg-gray-50 rounded-xl border-2 border-gray-200 p-3">
-          <h3 className="text-xl font-bold text-gray-700 mb-3 text-center">3-Day Forecast <span className="text-gray-500">(3-दिन का पूर्वानुमान)</span></h3>
-          <div className="grid grid-cols-3 gap-2">
-            {weather.forecast.map((day, index) => (
-              <div key={index} className="text-center p-2">
-                <p className="text-lg font-bold text-gray-700">{day.day}</p>
-                <div className="flex justify-center my-1">
-                  {getWeatherIcon(day.condition)}
-                </div>
-                <p className="text-xl font-bold">{day.temp}°C</p>
+              <div className="flex items-start">
+                <span className="text-7xl font-bold tracking-tighter">{Math.round(current.temperature_2m)}</span>
+                <span className="text-3xl font-light mt-2">°C</span>
               </div>
-            ))}
+              <p className="text-xl font-medium text-blue-100">{condition.label}</p>
+              <p className="text-lg text-blue-200 font-hindi">{condition.hindi}</p>
+            </div>
+          </div>
+
+          {/* Weather Details Grid */}
+          <div className="grid grid-cols-2 gap-4 w-full md:w-auto">
+            <div className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/5 flex flex-col items-center justify-center min-w-[100px]">
+              <Droplets className="text-blue-200 mb-2" size={24} />
+              <span className="text-2xl font-bold">{current.relative_humidity_2m}%</span>
+              <span className="text-xs text-blue-200 uppercase tracking-wider">Humidity</span>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/5 flex flex-col items-center justify-center min-w-[100px]">
+              <Wind className="text-blue-200 mb-2" size={24} />
+              <span className="text-2xl font-bold">{current.wind_speed_10m}</span>
+              <span className="text-xs text-blue-200 uppercase tracking-wider">km/h</span>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/5 flex flex-col items-center justify-center min-w-[100px]">
+              <Thermometer className="text-blue-200 mb-2" size={24} />
+              <span className="text-2xl font-bold">{Math.round(current.apparent_temperature)}°</span>
+              <span className="text-xs text-blue-200 uppercase tracking-wider">Feels Like</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Farming Advice Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white/95 text-gray-800 rounded-2xl p-5 mb-8 shadow-lg border-l-8 border-green-500"
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-green-100 rounded-full text-green-600">
+              <Cloud size={20} />
+            </div>
+            <h3 className="font-bold text-lg text-gray-800">Farming Advice <span className="text-green-600 font-hindi text-base">(कृषि सलाह)</span></h3>
+          </div>
+          <p className="text-gray-700 font-medium mb-1">{advice.english}</p>
+          <p className="text-green-700 font-hindi">{advice.hindi}</p>
+        </motion.div>
+
+        {/* 3-Day Forecast */}
+        <div>
+          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <Calendar size={20} />
+            Forecast
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {daily.time.slice(1, 4).map((date, index) => {
+              const dayCondition = getWeatherCondition(daily.weather_code[index + 1]);
+              const dateObj = new Date(date);
+              const dayName = dateObj.toLocaleDateString('en-IN', { weekday: 'short' });
+
+              return (
+                <div key={date} className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/5 flex items-center justify-between md:flex-col md:text-center hover:bg-white/20 transition-colors">
+                  <span className="font-bold text-lg">{dayName}</span>
+                  <div className="my-2">
+                    {getIconComponent(dayCondition.icon, 32)}
+                  </div>
+                  <div className="flex items-center gap-3 md:justify-center">
+                    <div className="flex items-center text-sm">
+                      <ArrowUp size={14} className="text-red-300 mr-1" />
+                      <span>{Math.round(daily.temperature_2m_max[index + 1])}°</span>
+                    </div>
+                    <div className="flex items-center text-sm text-blue-200">
+                      <ArrowDown size={14} className="text-blue-300 mr-1" />
+                      <span>{Math.round(daily.temperature_2m_min[index + 1])}°</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

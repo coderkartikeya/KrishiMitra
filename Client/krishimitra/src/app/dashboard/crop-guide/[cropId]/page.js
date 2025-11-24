@@ -94,7 +94,7 @@ const CropDetailPage = () => {
     <div className='min-h-screen bg-gradient-to-br from-green-50 to-blue-50'>
       <Navbar activeTab="/dashboard/crop-guide" onTabChange={handleTabChange} />
       
-      <div className="md:ml-80 pt-16 md:pt-0">
+      <div className="md:ml-80 pt-16 md:pt-0 pb-20">
         {/* Header */}
         <div className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -118,14 +118,14 @@ const CropDetailPage = () => {
             </div>
             
             {/* Navigation Tabs */}
-            <div className="flex space-x-8 border-b">
+            <div className="flex overflow-x-auto pb-1 border-b">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm ${
+                    className={`flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm whitespace-nowrap ${
                       activeTab === tab.id
                         ? 'border-green-500 text-green-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'

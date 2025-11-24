@@ -7,7 +7,7 @@ import { useAuth } from '../../middleware/clientAuth.js';
 import DashboardLayout from '../../components/dashboard/DashboardLayout';
 import DateTimeDisplay from '../../components/dashboard/DateTimeDisplay';
 import WeatherWidget from '../../components/dashboard/WeatherWidget';
-import CropStats from '../../components/dashboard/CropStats';
+import MarketGlimpse from '../../components/dashboard/MarketGlimpse';
 import SoilData from '../../components/dashboard/SoilData';
 import QuickActions from '../../components/dashboard/QuickActions';
 import VoiceAssistant from '../../components/dashboard/VoiceAssistant';
@@ -119,26 +119,26 @@ function Dashboard() {
   // Loading state UI
   if (dashboardData.isLoading) {
     return (
-      <DashboardLayout 
-        title="Dashboard" 
+      <DashboardLayout
+        title="Dashboard"
         subtitle="Loading your farming data..."
         icon={<span className="text-2xl">🌱</span>}
       >
         <div className="max-w-7xl mx-auto">
           <div className="h-16 bg-gray-200 rounded-md animate-pulse mb-6"></div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div className="lg:col-span-2 space-y-6">
               <div className="h-64 bg-gray-200 rounded-2xl animate-pulse"></div>
               <div className="h-80 bg-gray-200 rounded-2xl animate-pulse"></div>
             </div>
-            
+
             <div className="space-y-6">
               <div className="h-40 bg-gray-200 rounded-2xl animate-pulse"></div>
               <div className="h-96 bg-gray-200 rounded-2xl animate-pulse"></div>
             </div>
           </div>
-          
+
           <div className="mb-8">
             <div className="h-8 w-48 bg-gray-200 rounded-md animate-pulse mb-4"></div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -151,12 +151,12 @@ function Dashboard() {
       </DashboardLayout>
     );
   }
-  
+
   // Error state UI
   if (dashboardData.error) {
     return (
-      <DashboardLayout 
-        title="Dashboard" 
+      <DashboardLayout
+        title="Dashboard"
         subtitle="Error loading data"
         icon={<span className="text-2xl">⚠️</span>}
       >
@@ -164,8 +164,8 @@ function Dashboard() {
           <div className="bg-red-50 border border-red-200 rounded-xl p-8 max-w-md mx-auto">
             <h2 className="text-2xl font-bold text-red-600 mb-4">Unable to Load Dashboard</h2>
             <p className="text-gray-600 mb-6">We encountered an error while loading your dashboard data. Please try refreshing the page.</p>
-            <button 
-              onClick={() => window.location.reload()} 
+            <button
+              onClick={() => window.location.reload()}
               className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
               Refresh Page
@@ -178,8 +178,8 @@ function Dashboard() {
 
   // Main dashboard UI
   return (
-    <DashboardLayout 
-      title="Dashboard" 
+    <DashboardLayout
+      title="Dashboard"
       subtitle="Welcome to Smart Farming Dashboard"
       icon={<span className="text-2xl">🌱</span>}
     >
@@ -191,32 +191,31 @@ function Dashboard() {
           <VoiceAssistant onActivate={handleVoiceAssistant} />
         </div>
       </div>
-      
+
       {/* Weather Widget - Simplified and Full Width */}
       <div className="mb-6">
         <WeatherWidget location="Meerut, UP" />
       </div>
-      
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Left Column - Crop Statistics */}
+        {/* Left Column - Market Glimpse (Replaces Crop Stats) */}
         <div className="lg:col-span-2">
-          <CropStats />
+          <MarketGlimpse />
         </div>
-        
+
         {/* Right Column - Quick Actions */}
-        <div>
-          <div className="bg-white rounded-2xl shadow-md border-2 border-green-100 p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Quick Actions <span className="text-sm font-normal text-gray-500">(त्वरित कार्य)</span></h2>
-            <QuickActions onActionClick={handleQuickAction} />
-          </div>
+
+      </div>
+      <div>
+        <div className="bg-white rounded-2xl shadow-md border-2 border-green-100 p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Quick Actions <span className="text-sm font-normal text-gray-500">(त्वरित कार्य)</span></h2>
+          <QuickActions onActionClick={handleQuickAction} />
         </div>
       </div>
-      
+
       {/* Soil Data Section - Moved to bottom */}
-      <div className="mb-8">
-        <SoilData />
-      </div>
+
     </DashboardLayout>
   );
 }

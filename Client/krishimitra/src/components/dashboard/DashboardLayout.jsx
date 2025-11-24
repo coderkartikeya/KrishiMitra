@@ -86,7 +86,7 @@ const DashboardLayout = ({ children, title, subtitle, icon }) => {
       <NavBar activeTab={activeTab} onTabChange={handleTabChange} />
       
       {/* Main Content */}
-      <div className="md:ml-80">
+      <div className="md:ml-80 pb-20">
         {/* Mobile Header */}
         <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3">
           {title && (

@@ -22,7 +22,7 @@ app.add_middleware(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATHS = {
     "base": os.path.join(BASE_DIR, "models", "base.keras"),
-    "tomato": os.path.join(BASE_DIR, "models", "tomato.keras")
+    "tomato": os.path.join(BASE_DIR, "models", "model.h5")
 }
 
 # Cache loaded models

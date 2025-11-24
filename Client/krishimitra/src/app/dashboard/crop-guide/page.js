@@ -49,7 +49,7 @@ const CropGuidePage = () => {
     <div className='min-h-screen bg-gradient-to-br from-green-50 to-blue-50'>
       <Navbar activeTab="/dashboard/crop-guide" onTabChange={handleTabChange} />
       
-      <div className="md:ml-80 pt-16 md:pt-0">
+      <div className="md:ml-80 pt-16 md:pt-0 pb-20">
         {/* Header */}
         <div className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

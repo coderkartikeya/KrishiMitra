@@ -1,7 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Upload, AlertCircle, Camera, X, RotateCcw, Leaf, Shield, BookOpen, CheckCircle } from 'lucide-react';
+import { Upload,Sprout ,Droplets ,ChevronRight , AlertCircle, Camera, X, RotateCcw, Leaf, Shield, BookOpen,Bug , CheckCircle } from 'lucide-react';
 import Navbar from '../../../components/NavBar';
 
 const PlantScanPage = () => {
@@ -138,6 +138,38 @@ const PlantScanPage = () => {
     ]
   };
 
+  const diseaseLookup = Object.entries(plantDiseaseData).reduce((acc, [plant, diseases]) => {
+    acc[plant] = diseases.reduce((map, disease, index) => {
+      map[disease.class] = disease;
+      map[index] = disease;
+      return map;
+    }, {});
+    return acc;
+  }, {});
+
+  const formatDiseaseName = (name = '') => {
+    if (!name) return 'Unknown Disease';
+    return name
+      .split('_')
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  };
+
+  const getDiseaseDetails = (plant, key) => {
+    if (!plant || key === undefined || key === null) return null;
+    const lookup = diseaseLookup[plant];
+    if (!lookup) return null;
+    return lookup[key] || lookup[String(key)] || null;
+  };
+
+  const formatConfidence = (value) => {
+    const numeric = Number(value);
+    if (Number.isNaN(numeric)) {
+      return 0;
+    }
+    return Math.min(100, Math.max(0, numeric));
+  };
+
   // Camera functionality
   const startCamera = async () => {
     try {
@@ -239,26 +271,33 @@ const PlantScanPage = () => {
       });
   
       const data = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(data.detail || "Something went wrong");
       }
-      // console.log(selectedPlant);
-      
-      const diseaseData = selectedPlant === 'Potato' ? plantDiseaseData.Potato[data.predicted_class] : plantDiseaseData.Tomato[data.predicted_class];
-      // console.log(diseaseData);
-      
+
+      const diseaseKey = data.disease_name ?? data.predicted_class;
+      const diseaseData = getDiseaseDetails(selectedPlant, diseaseKey);
+      const formattedName = diseaseData?.name || formatDiseaseName(data.disease_name);
+      const diseaseClass = data.disease_name || diseaseData?.class || 'Unknown';
+      const recommendations = Array.isArray(data.remedies) && data.remedies.length > 0
+        ? data.remedies
+        : diseaseData?.remedies || [];
+      const treatments = diseaseData?.treatment || diseaseData?.treatments || [];
+      const isHealthyResult = (diseaseClass || '').toLowerCase().includes('healthy');
+
       setResult({
         plantType: selectedPlant,
-        disease: diseaseData.name || diseaseData.class,
-        diseaseClass: diseaseData.class,
-        commonlyAffects: diseaseData.commonlyAffects,
-        symptoms: diseaseData.symptoms,
-        causes: diseaseData.causes,
-        confidence: data.confidence,
-        recommendations: diseaseData.remedies,
-        treatment: diseaseData.treatment,
-        isHealthy: diseaseData.class.includes('healthy')
+        disease: formattedName,
+        diseaseClass,
+        commonlyAffects: diseaseData?.commonlyAffects || 'Information unavailable for this disease.',
+        symptoms: diseaseData?.symptoms || 'Detailed symptom information will be available soon.',
+        causes: diseaseData?.causes || 'Detailed cause information will be available soon.',
+        confidence: typeof data.confidence === 'number' ? Number(data.confidence.toFixed(2)) : data.confidence,
+        recommendations,
+        treatments,
+        severity: data.severity || (isHealthyResult ? 'none' : 'moderate'),
+        isHealthy: isHealthyResult
       });
     } catch (err) {
       console.error(err);
@@ -317,12 +356,14 @@ const PlantScanPage = () => {
     };
   }, [stream]);
 
+  const confidenceValue = formatConfidence(result?.confidence);
+
   return (
     <div className='min-h-screen bg-gradient-to-br from-green-50 to-blue-50'>
       <Navbar activeTab="/dashboard/plantscan" onTabChange={handleTabChange}/>
       
       {/* Desktop Layout with proper spacing for navbar */}
-      <div className="md:ml-80 pt-16 md:pt-0">
+      <div className="md:ml-80 pt-16 md:pt-0 pb-20">
         <div className="min-h-screen bg-gray-50">
           {/* Header */}
           <div className="bg-white shadow-sm border-b">
@@ -560,14 +601,14 @@ const PlantScanPage = () => {
                         <div>
                           <div className="flex justify-between items-center mb-2">
                             <span className="text-sm font-medium text-gray-700">Confidence Level</span>
-                            <span className="text-sm font-medium text-gray-900">{result.confidence}%</span>
+                            <span className="text-sm font-medium text-gray-900">{confidenceValue}%</span>
                     </div>
                           <div className="w-full bg-gray-200 rounded-full h-3">
                             <div 
                               className={`h-3 rounded-full transition-all duration-500 ${
                                 result.isHealthy ? 'bg-green-500' : 'bg-red-500'
                               }`}
-                              style={{ width: `${result.confidence}%` }}
+                              style={{ width: `${confidenceValue}%` }}
                             ></div>
                     </div>
                   </div>
@@ -587,33 +628,35 @@ const PlantScanPage = () => {
                         {/* Prevention Methods */}
                         <div>
                           <h5 className="font-semibold text-gray-900 mb-3">Prevention Methods</h5>
-                  <ul className="space-y-2">
-                            {result.recommendations.map((rec, index) => (
-                              <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
-                                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                <span>{rec}</span>
-                      </li>
-                    ))}
-                  </ul>
+                          {result.recommendations?.length ? (
+                            <ul className="space-y-2">
+                              {result.recommendations.map((rec, index) => (
+                                <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
+                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                                  <span>{rec}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="text-sm text-gray-600">No specific prevention methods available for this detection.</p>
+                          )}
                 </div>
                 
                         {/* Safe Treatment Options */}
                         <div>
                           <h5 className="font-semibold text-gray-900 mb-3">Safe Treatment Options</h5>
-                          <ul className="space-y-2">
-                            {result.treatments && result.treatments.map((treatment, index) => (
-                              <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
-                                <Leaf className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                                <span>{treatment}</span>
-                              </li>
-                            ))}
-                            {!result.treatments && (
-                              <li className="flex items-start gap-2 text-sm text-gray-700">
-                                <Leaf className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                                <span>No specific treatments available for this condition.</span>
-                              </li>
-                            )}
-                          </ul>
+                          {result.treatments?.length ? (
+                            <ul className="space-y-2">
+                              {result.treatments.map((treatment, index) => (
+                                <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
+                                  <Leaf className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                                  <span>{treatment}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="text-sm text-gray-600">No specific treatments available for this condition.</p>
+                          )}
                 </div>
               </div>
             </div>
