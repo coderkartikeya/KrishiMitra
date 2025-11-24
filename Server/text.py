@@ -6,6 +6,50 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 import os
 from typing import Optional
 from uuid import uuid4
+from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2, preprocess_input, decode_predictions
+from fastapi import HTTPException
+
+# Load MobileNetV2 for validation
+try:
+    validator_model = MobileNetV2(weights='imagenet')
+    print("Validator model loaded successfully")
+except Exception as e:
+    print(f"Warning: Could not load validator model: {e}")
+    validator_model = None
+
+def is_plant_image(img_path):
+    if validator_model is None:
+        return True # Skip validation if model failed to load
+        
+    try:
+        img = load_img(img_path, target_size=(224, 224))
+        x = img_to_array(img)
+        x = np.expand_dims(x, axis=0)
+        x = preprocess_input(x)
+        
+        preds = validator_model.predict(x)
+        decoded = decode_predictions(preds, top=15)[0]
+        
+        # Keywords to identify plants/crops
+        plant_keywords = [
+            'plant', 'leaf', 'flower', 'fruit', 'vegetable', 'tree', 'grass', 
+            'agriculture', 'crop', 'garden', 'pot', 'greenhouse', 'corn', 'maize',
+            'wheat', 'rice', 'potato', 'tomato', 'pepper', 'fungus', 'mushroom',
+            'cabbage', 'broccoli', 'cauliflower', 'zucchini', 'squash', 'cucumber',
+            'pod', 'seed', 'root', 'stem', 'grain', 'harvest', 'orchard', 'lettuce',
+            'spinach', 'herb', 'shrub', 'bush', 'vine', 'produce', 'food'
+        ]
+        
+        # Check if any prediction matches plant keywords
+        for _, label, prob in decoded:
+            if any(keyword in label.lower() for keyword in plant_keywords):
+                return True
+                
+        return False
+        
+    except Exception as e:
+        print(f"Validation error: {e}")
+        return True # Fail open
 
 app = FastAPI()
 
@@ -60,6 +104,11 @@ async def predict_image(file: UploadFile = File(...), type: Optional[str] = Form
             model_type = "base"
 
         model = load_model(model_type)
+
+        # Validate image before prediction
+        if not is_plant_image(file_path):
+            os.remove(file_path)
+            raise HTTPException(status_code=400, detail="The uploaded image does not appear to be a plant leaf. Please upload a valid crop image.")
 
         # Predict
         predicted_class, confidence = predict(model, file_path)

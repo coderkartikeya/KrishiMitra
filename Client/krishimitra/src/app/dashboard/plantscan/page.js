@@ -271,14 +271,17 @@ const PlantScanPage = () => {
       });
   
       const data = await response.json();
+      // console.log(data);
 
       if (!response.ok) {
         throw new Error(data.detail || "Something went wrong");
       }
 
       const diseaseKey = data.disease_name ?? data.predicted_class;
+      
       const diseaseData = getDiseaseDetails(selectedPlant, diseaseKey);
-      const formattedName = diseaseData?.name || formatDiseaseName(data.disease_name);
+      console.log(diseaseData);
+      const formattedName = diseaseData?.class || formatDiseaseName(data.disease_name);
       const diseaseClass = data.disease_name || diseaseData?.class || 'Unknown';
       const recommendations = Array.isArray(data.remedies) && data.remedies.length > 0
         ? data.remedies
